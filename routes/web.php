@@ -14,5 +14,7 @@
     | contains the "web" middleware group. Now create something great!
     |
     */
-
-    Route::get('/', [MyController::class, 'index']);
+    Route::get('/', function () {
+        return view('form');
+    });
+    Route::post('/', [MyController::class, 'index'])->name('form.store');
