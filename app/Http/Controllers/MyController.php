@@ -2,8 +2,8 @@
 
     namespace App\Http\Controllers;
 
+    use App\Jobs\SendEmail;
     use Illuminate\Support\Facades\Request;
-    use Illuminate\Support\Facades\Response;
     use League\Csv\Reader;
 
     class MyController extends Controller
@@ -17,36 +17,45 @@
 
         public function index()
         {
-            $data = array_slice(Request::post(), 1, count(Request::post()) - 1);
-            $col_index = array();
-            for ($i = 0; $i < count($data); $i++) {
-                $col_index[] = $data['col_'.$i];
-            }
-            // use this logic to dynamically binding the columns to the model
+            $message = <<<EOF
+                Dear <strong>{#0#}</strong>,<br >
+                Welcome to <em>{#1#}</em> at address <em>{#2#}</em>.<br > Thanks for your participation in the <em>{#1#}</em>.
 
-            $header_status = Request::post('is_header');
-            $message = "Dear <strong>%s</strong>,<br> This is a <em>test email</em> sent at %s.<br>Thanks & Regards<br/>";
+                <em>Thanks & Regards,</em><br>
+                <strong><em>{#0#}</em></strong>
+            EOF;
+
             $csv = Reader::createFromPath($this->filepath);
-            if ($header_status === 1) {
-                $csv->setHeaderOffset(0);
-            }
             $records = $csv->getRecords();
             $data = [];
             foreach ($records as $record) {
                 $data[] = $record;
             }
-//            return count($data[0]);
-            $emails = array();
+            $messages = array();
             for ($i = 0; $i < count($data); $i++) {
-                $x = 0;
-                $emails[] = [
-                    $col_index[count($data) - count($data)] => $data[$i][$x],
-                    $col_index[count($data) - (count($data) - 1)] => $data[$i][count($data) - (count($data) - 1)],
-                    $col_index[$x + 2] => $data[$i][$x + 2],
-                ];
+                $messages[] = array(
+                    "message" => $this->format($message, $data[$i]),
+                    "email" => $data[$i][count($data[0]) - 1],
+                );
             }
-
-//            SendEmail::dispatch($emails, $message);
-            return Response::json($emails);
+            SendEmail::dispatch($messages);
+            return $messages;
         }
+
+
+        private function format($msg, $vars): array|string
+        {
+            $vars = (array) $vars;
+
+            $msg = preg_replace_callback('#{}#', function () {
+                static $i = 0;
+
+                return '{#'.($i++).'#}';
+            }, $msg);
+
+            return str_replace(array_map(function ($k) {
+                return '{#'.$k.'#}';
+            }, array_keys($vars)), array_values($vars), $msg);
+        }
+
     }

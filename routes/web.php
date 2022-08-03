@@ -1,7 +1,6 @@
 <?php
 
     use App\Http\Controllers\MyController;
-    use App\Http\Controllers\OperationController;
     use Illuminate\Support\Facades\Route;
 
     /*
@@ -14,7 +13,7 @@
     | contains the "web" middleware group. Now create something great!
     |
     */
-    Route::get('/', function () {
-        return view('form');
-    });
-    Route::post('/', [MyController::class, 'index'])->name('form.store');
+//    Route::get('/', function () {
+//        return view('form');
+//    })->name('form.index');
+    Route::get('/', [MyController::class, 'index'])->name('form.store');
