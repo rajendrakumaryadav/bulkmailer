@@ -7,7 +7,7 @@ import { HeaderComponent } from './header/header.component';
 import { ListjobsComponent } from './dashboard/listjobs/listjobs.component';
 import { NewjobComponent } from './dashboard/newjob/newjob.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 
 @NgModule({
@@ -22,7 +22,8 @@ import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    CKEditorModule
+    CKEditorModule,
+    ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import * as ClassicEditor from '../../../assets/ckeditor5-34.2.0/build/ckeditor';
 
 @Component({
@@ -12,9 +13,26 @@ export class NewjobComponent implements OnInit {
   emailBody=''
   step=1
   file:File
-  constructor() { }
+  mailForm:FormGroup
+
+  constructor(
+    private fb:FormBuilder
+  ) { 
+    this.mailForm = fb.group({
+      subject:['',Validators.compose([Validators.required,Validators.maxLength(50)])],
+      from:['',Validators.compose([Validators.required,Validators.email])],
+      body:['',Validators.compose([Validators.required])],
+    })
+  }
 
   ngOnInit() {
+  }
+
+  sendMail(){
+    console.log(this.mailForm)
+    if(this.mailForm.valid){
+
+    }
   }
 
   onExcelSelected(e){

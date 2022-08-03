@@ -8,15 +8,22 @@
     </div>
     <div *ngIf="step==2">
         <a (click)="step=1">Back</a>
-        <p>Compile Email</p>
-    
-        <ckeditor [(ngModel)]="emailBody"
-            [config]="{ toolbar: [ 'bold', 'italic','fontColor','fontSize','underline','numberedList', 'bulletedList','|','outdent', 'indent', '|','uploadImage','insertTable','|','subscript', 'superscript','specialCharacters','|','undo', 'redo','sourceEditing' ] }"
-            [editor]="Editor"></ckeditor>
-        
-        <p>{{emailBody}}</p>
-        <button class="btn btn-primary" *ngIf="emailBody">Send Email</button>
+        <p>Compose Email</p>
+
+        <form [formGroup]="mailForm" (ngSubmit)="sendMail()">
+            From : <input type="email" formControlName="from">
+            Subject : <input type="text" formControlName="subject">
+
+            <ckeditor formControlName="body"
+                [config]="{ toolbar: [ 'bold', 'italic','fontColor','fontSize','underline','numberedList', 'bulletedList','|','outdent', 'indent', '|','uploadImage','insertTable','|','subscript', 'superscript','specialCharacters','|','undo', 'redo','sourceEditing' ] }"
+                [editor]="Editor"></ckeditor>
+
+            <p>{{mailForm.get('body').value}}</p>
+
+            <p *ngIf="mailForm.invalid && mailForm.touched" style="color: red;">Some fields Invalid</p>
+            
+            <button class="btn btn-primary" type="submit" [disabled]="!mailForm.valid">Send Email</button>
+        </form>
 
     </div>
 </div>
-
