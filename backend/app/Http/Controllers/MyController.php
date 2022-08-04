@@ -72,7 +72,12 @@
             // dispatching the job to the queue
             SendEmail::dispatch($messages, $subject, $reply_to, $from, $sender_name);
 
-            return Response::json(['success' => 'Email sent successfully']);
+            return Response::json(
+                [
+                    'success' => 'Email sent successfully',
+                    'status_code' => 200
+                ]
+            );
         }
 
         /**
