@@ -2,7 +2,7 @@
     <h1>Step {{step}}</h1>
     <div *ngIf="step==1">
         <p>Upload excel</p>
-        <input type="file" accept=".xlsx,.csv" required (change)="onExcelSelected($event)">
+        <input type="file" accept=".csv" required (change)="onExcelSelected($event)">
 
         <button class="btn btn-primary" (click)="step=2" *ngIf="file">Next</button>
     </div>
@@ -13,6 +13,7 @@
         <form [formGroup]="mailForm" (ngSubmit)="sendMail()">
             From : <input type="email" formControlName="from">
             Subject : <input type="text" formControlName="subject">
+            Sender Name : <input type="text" formControlName="senderName">
 
             <ckeditor formControlName="body"
                 [config]="{ toolbar: [ 'bold', 'italic','fontColor','fontSize','underline','numberedList', 'bulletedList','|','outdent', 'indent', '|','uploadImage','insertTable','|','subscript', 'superscript','specialCharacters','|','undo', 'redo','sourceEditing' ] }"
@@ -22,6 +23,8 @@
 
             <p *ngIf="mailForm.invalid && mailForm.touched" style="color: red;">Some fields Invalid</p>
             
+            Reply to : <input type="email" formControlName="replyTo">
+
             <button class="btn btn-primary" type="submit" [disabled]="!mailForm.valid">Send Email</button>
         </form>
 
