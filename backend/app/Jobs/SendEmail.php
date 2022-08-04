@@ -47,6 +47,7 @@
             for ($i = 0; $i < count($this->message); $i++) {
                 Mail::html($this->message[$i]['message'], function ($message) use ($i) {
                     logger($this->message[$i]['message'].'Sending email to '.$this->message[$i]['email']." at ".date('Y-m-d H:i:s'));
+//                    usleep(100);
                     $message->to($this->message[$i]['email'])->subject($this->subject)->from($this->from,
                         $this->sender_name)->replyTo($this->reply_to);
                 });
