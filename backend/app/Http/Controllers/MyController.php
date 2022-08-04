@@ -48,18 +48,12 @@
             $subject = Request::post('subject') ?? "Demo";
             $from = Request::post('from') ?? "admin@vvm.org.in";
             $sender_name = Request::post('sender_name') ?? "VVM Official Handle";
+
             try {
                 $this->filepath = $file->move('storage/data/', $this->get_unique_filename($file));
             } catch (Exception $e) {
                 return Response::json(['error' => $e->getMessage()]);
             }
-//            $message = <<<EOF
-//                Dear <strong>{#0#}</strong>,<br >
-//                Welcome to <em>{#1#}</em> at address <em>{#2#}</em>.<br > Thanks for your participation in the <em>{#1#}</em>.
-//
-//                <em>Thanks & Regards,</em><br>
-//                <strong><em>{#0#}</em></strong>
-//            EOF;
 
             $csv = Reader::createFromPath($this->filepath);
             $records = $csv->getRecords();
@@ -68,15 +62,17 @@
                 $data[] = $record;
             }
             $messages = array();
+
             for ($i = 0; $i < count($data); $i++) {
                 $messages[] = array(
                     "message" => $this->format($template, $data[$i]),
                     "email" => $data[$i][count($data[0]) - 1],
                 );
             }
+            // dispatching the job to the queue
             SendEmail::dispatch($messages, $subject, $reply_to, $from, $sender_name);
 
-            return $messages;
+            return Response::json(['success' => 'Email sent successfully']);
         }
 
         /**
