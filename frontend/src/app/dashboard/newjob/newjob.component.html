@@ -1,0 +1,22 @@
+<div class="container">
+    <h1>Step {{step}}</h1>
+    <div *ngIf="step==1">
+        <p>Upload excel</p>
+        <input type="file" accept=".xlsx,.csv" required (change)="onExcelSelected($event)">
+
+        <button class="btn btn-primary" (click)="step=2" *ngIf="file">Next</button>
+    </div>
+    <div *ngIf="step==2">
+        <a (click)="step=1">Back</a>
+        <p>Compile Email</p>
+    
+        <ckeditor [(ngModel)]="emailBody"
+            [config]="{ toolbar: [ 'bold', 'italic','fontColor','fontSize','underline','numberedList', 'bulletedList','|','outdent', 'indent', '|','uploadImage','insertTable','|','subscript', 'superscript','specialCharacters','|','undo', 'redo','sourceEditing' ] }"
+            [editor]="Editor"></ckeditor>
+        
+        <p>{{emailBody}}</p>
+        <button class="btn btn-primary" *ngIf="emailBody">Send Email</button>
+
+    </div>
+</div>
+
