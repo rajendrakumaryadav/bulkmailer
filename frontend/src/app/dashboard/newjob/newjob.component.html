@@ -15,11 +15,11 @@
             Subject : <input type="text" formControlName="subject">
             Sender Name : <input type="text" formControlName="senderName">
 
-            <ckeditor formControlName="body"
+            <ckeditor formControlName="body" (ready)="onReady($event)"
                 [config]="{ toolbar: [ 'bold', 'italic','fontColor','fontSize','underline','numberedList', 'bulletedList','|','outdent', 'indent', '|','uploadImage','insertTable','|','subscript', 'superscript','specialCharacters','|','undo', 'redo','sourceEditing' ] }"
                 [editor]="Editor"></ckeditor>
 
-            <p>{{mailForm.get('body').value}}</p>
+            <div [innerHtml]="sanitizer.bypassSecurityTrustHtml(mailForm.get('body').value)"></div>
 
             <p *ngIf="mailForm.invalid && mailForm.touched" style="color: red;">Some fields Invalid</p>
             

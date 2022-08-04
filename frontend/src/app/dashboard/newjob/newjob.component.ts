@@ -1,13 +1,33 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { HttpService } from 'src/app/services/http.service';
 import * as ClassicEditor from '../../../assets/ckeditor5-34.2.0/build/ckeditor';
 
+export class UploadAdapter {
+  private loader;
+  constructor( loader ) {
+     this.loader = loader;
+  }
+
+  upload() {
+     return this.loader.file
+           .then( file => new Promise( ( resolve, reject ) => {
+                 var myReader= new FileReader();
+                 myReader.onloadend = (e) => {
+                    resolve({ default: myReader.result });
+                 }
+
+                 myReader.readAsDataURL(file);
+           } ) );
+  };
+}
+
 @Component({
   selector: 'app-newjob',
   templateUrl: './newjob.component.html',
-  styleUrls: ['./newjob.component.scss']
+  styleUrls: ['./newjob.component.scss'],
 })
 export class NewjobComponent implements OnInit {
 
@@ -20,7 +40,8 @@ export class NewjobComponent implements OnInit {
   constructor(
     private fb:FormBuilder,
     private router:Router,
-    private httpService:HttpService
+    private httpService:HttpService,
+    public sanitizer:DomSanitizer
   ) { 
     this.mailForm = fb.group({
       subject:['',Validators.compose([Validators.required,Validators.maxLength(50)])],
@@ -29,6 +50,8 @@ export class NewjobComponent implements OnInit {
       body:['',Validators.compose([Validators.required])],
       replyTo:['',Validators.compose([Validators.email])],
     })
+
+    
   }
 
   ngOnInit() {
@@ -79,6 +102,14 @@ export class NewjobComponent implements OnInit {
     // if(this.file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || this.file.type == 'text/csv'){
       
     // }
+  }
+
+  onReady(eventData) {
+    eventData.plugins.get('FileRepository').createUploadAdapter = function (loader) {
+      // console.log('loader : ', loader)
+      // console.log(btoa(loader.file));
+      return new UploadAdapter(loader);
+    };
   }
 
 }
