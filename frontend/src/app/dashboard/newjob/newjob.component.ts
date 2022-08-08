@@ -1,10 +1,33 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Router } from '@angular/router';
+import { HttpService } from 'src/app/services/http.service';
 import * as ClassicEditor from '../../../assets/ckeditor5-34.2.0/build/ckeditor';
+
+export class UploadAdapter {
+  private loader;
+  constructor( loader ) {
+     this.loader = loader;
+  }
+
+  upload() {
+     return this.loader.file
+           .then( file => new Promise( ( resolve, reject ) => {
+                 var myReader= new FileReader();
+                 myReader.onloadend = (e) => {
+                    resolve({ default: myReader.result });
+                 }
+
+                 myReader.readAsDataURL(file);
+           } ) );
+  };
+}
 
 @Component({
   selector: 'app-newjob',
   templateUrl: './newjob.component.html',
-  styleUrls: ['./newjob.component.scss']
+  styleUrls: ['./newjob.component.scss'],
 })
 export class NewjobComponent implements OnInit {
 
@@ -12,17 +35,81 @@ export class NewjobComponent implements OnInit {
   emailBody=''
   step=1
   file:File
-  constructor() { }
+  mailForm:FormGroup
+
+  constructor(
+    private fb:FormBuilder,
+    private router:Router,
+    private httpService:HttpService,
+    public sanitizer:DomSanitizer
+  ) { 
+    this.mailForm = fb.group({
+      subject:['',Validators.compose([Validators.required,Validators.maxLength(50)])],
+      senderName:['',Validators.compose([Validators.required,Validators.maxLength(50)])],
+      from:['',Validators.compose([Validators.required,Validators.email])],
+      body:['',Validators.compose([Validators.required])],
+      replyTo:['',Validators.compose([Validators.email])],
+    })
+
+    
+  }
 
   ngOnInit() {
+  }
+
+  sendMail(){
+    console.log(this.mailForm)
+    if(!this.file){
+      return this.step=1
+    }
+
+    if(this.mailForm.valid){
+      let {subject,senderName,from,body,replyTo} = this.mailForm.value
+
+      let bodyForm = new FormData()
+      bodyForm.append('file',this.file)
+      bodyForm.append('subject',subject)
+      bodyForm.append('template',body)
+      bodyForm.append('reply_to',replyTo)
+      bodyForm.append('from',from)
+      bodyForm.append('sender_name',senderName)
+
+      this.httpService.sendmail(bodyForm)
+      .subscribe(
+        res=>{
+          if(res.status_code == '200'){
+            alert('mail sent')
+            this.router.navigate(['/'])
+          }else{
+            alert('mail sending error '+res.status_code)
+          }
+          console.log(res)
+        },
+        err=>{
+          alert(err)
+          console.log(err)
+        }
+      )
+
+      // alert('mail sent')
+      // this.router.navigate(['/'])
+    }
   }
 
   onExcelSelected(e){
     console.log(e)
     this.file = e.target.files[0]
-    if(this.file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || this.file.type == 'text/csv'){
-      alert('file ok')
-    }
+    // if(this.file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || this.file.type == 'text/csv'){
+      
+    // }
+  }
+
+  onReady(eventData) {
+    eventData.plugins.get('FileRepository').createUploadAdapter = function (loader) {
+      // console.log('loader : ', loader)
+      // console.log(btoa(loader.file));
+      return new UploadAdapter(loader);
+    };
   }
 
 }
