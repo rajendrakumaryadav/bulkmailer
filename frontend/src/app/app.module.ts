@@ -9,14 +9,16 @@ import { NewjobComponent } from './dashboard/newjob/newjob.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientModule } from '@angular/common/http';
+import { LoginComponent } from './auth/login/login.component'
 @NgModule({
   declarations: [
     AppComponent,
     HeaderComponent,
     ListjobsComponent,
     NewjobComponent,
-    DashboardComponent
+    DashboardComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,

@@ -6,6 +6,7 @@ import { Injectable } from "@angular/core";
 })
 export class HttpService{
     endPoint='http://15.206.153.112:8000'
+    isLoggedIn = false
 
     constructor(
         private http:HttpClient
