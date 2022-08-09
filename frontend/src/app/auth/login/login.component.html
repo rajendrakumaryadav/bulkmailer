@@ -1,0 +1,51 @@
+<main>
+	<div class="full-height">
+		<div class="container-fluid">
+			<div class="row justify-content-center">
+				<div class="section-padding2 col-xl-4 col-lg-4 col-md-10 col-sm-10">
+					
+					<div class="row justify-content-center">
+						<h1>Bulkmail</h1>
+					</div>
+					<div class="formC">
+						<form [formGroup]="loginForm" (ngSubmit)="toVerify()">
+							<div class="form-group pcheck">
+								<input type="text" class="form-control"
+								formControlName="email"
+								placeholder="Username"
+								name="username"
+								>
+								<!-- <div class="pcheck" *ngIf="loginForm.controls['email'].invalid && loginForm.controls['email'].touched || loginForm.controls['email'].dirty">
+									<ul>
+										<li>Please enter correct username.</li>
+									</ul>
+								</div> -->
+							</div>
+							<div class="form-group pcheck">
+								<input type="password" class="form-control"
+								placeholder="Password"
+								name="pass"
+								formControlName="password"
+								>
+								<!-- <div class="pcheck" *ngIf="loginForm.controls['password'].invalid && loginForm.controls['password'].touched || loginForm.controls['password'].dirty ">
+									<ul>
+										<li>Please enter correct password.</li>
+									</ul>
+								</div> -->
+							</div>
+							<div >
+								<button type="submit">Sign In</button>
+								<div class="pcheck" *ngIf="showPassError">
+									<ul>
+										<li>Please check username or password.</li>
+									</ul>
+								</div>
+							</div>
+						</form>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
