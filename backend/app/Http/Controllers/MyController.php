@@ -24,25 +24,26 @@
             return view('form');
         }
 
-        /**
-         * @throws FileException
-         */
+
         public function index()
         {
             $validated = Validator::make(Request::all(), [
                 'file' => 'required|file|mimes:csv,txt',
+//                'files' => 'file',
                 'subject' => 'required|string',
                 'template' => 'required|string',
                 'reply_to' => 'email',
                 'from' => 'required|email',
                 'sender_name' => 'required|string',
             ]);
+
             if (count($validated->errors()) > 0) {
                 return $validated->errors();
             }
 
 
             $file = Request::file('file');
+//            $files = Request::file('files');
             $template = Request::post('template');
             $reply_to = Request::post('reply_to') ?? "demo@demo.com";
             $subject = Request::post('subject') ?? "Demo";

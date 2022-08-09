@@ -117,6 +117,11 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+        'Mailer' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/mailer.log'),
+            'level' => 'info'
+        ]
     ],
 
 ];

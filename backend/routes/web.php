@@ -16,7 +16,14 @@
 //    Route::get('/', function () {
 //        return view('form');
 //    })->name('form.index');
-//    Route::get('/', [MyController::class, 'view_form'])->name('form.index');
-//    Route::post('/', [MyController::class, 'index'])->name('form.store');
+    if (env('APP_ENV') === 'local') {
+        Route::get('/', function () {
+            return view('form');
+        })->name('form.index');
+        Route::post('/', [MyController::class, 'index'])->name('form.store');
+
+    }
+    //    Route::get('/', [MyController::class, 'view_form'])->name('form.index');
+    //    Route::post('/', [MyController::class, 'index'])->name('form.store');
 
     //    Route::post('/', [MyController::class, 'index'])->name('form.store');

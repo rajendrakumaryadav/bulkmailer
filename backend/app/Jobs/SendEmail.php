@@ -2,11 +2,14 @@
 
     namespace App\Jobs;
 
+    use Carbon\Carbon;
+    use Exception;
     use Illuminate\Bus\Queueable;
     use Illuminate\Contracts\Queue\ShouldQueue;
     use Illuminate\Foundation\Bus\Dispatchable;
     use Illuminate\Queue\InteractsWithQueue;
     use Illuminate\Queue\SerializesModels;
+    use Illuminate\Support\Facades\Log;
     use Illuminate\Support\Facades\Mail;
 
     class SendEmail implements ShouldQueue
@@ -45,14 +48,18 @@
         public function handle()
         {
             for ($i = 0; $i < count($this->message); $i++) {
-                Mail::html($this->message[$i]['message'], function ($message) use ($i) {
-                    logger($this->message[$i]['message'].'Sending email to '.$this->message[$i]['email']." at ".date('Y-m-d H:i:s'));
+                try {
+
+                    Mail::html($this->message[$i]['message'], function ($message) use ($i) {
+                        Log::channel('Mailer')->info("Date: ".Carbon::now() ." From: ". $this->from ." To: ". $this->message[$i]['email'] ." Subject: ". $this->subject);
 //                    usleep(100);
-                    $message->to($this->message[$i]['email'])->subject($this->subject)->from($this->from,
-                        $this->sender_name)->replyTo($this->reply_to);
-                });
+                        $message->to($this->message[$i]['email'])->subject($this->subject)->from($this->from,
+                            $this->sender_name)->replyTo($this->reply_to);
+                    });
 
-
+                } catch (Exception $e) {
+                    Log::channel('Mailer')->info($e->getMessage());
+                }
             }
         }
     }
