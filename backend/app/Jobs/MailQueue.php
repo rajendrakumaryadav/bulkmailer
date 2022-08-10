@@ -2,13 +2,11 @@
 
     namespace App\Jobs;
 
-    use App\Models\JobSchedule;
+    use App\Models\JobDetails;
     use Illuminate\Bus\Queueable;
-    use Illuminate\Contracts\Queue\ShouldBeUnique;
     use Illuminate\Contracts\Queue\ShouldQueue;
     use Illuminate\Foundation\Bus\Dispatchable;
     use Illuminate\Queue\InteractsWithQueue;
-    use Illuminate\Queue\Jobs\Job;
     use Illuminate\Queue\SerializesModels;
 
 
@@ -17,6 +15,7 @@
         use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
         private array $data;
+
         /**
          * Create a new job instance.
          *
@@ -34,7 +33,7 @@
          */
         public function handle()
         {
-            $job = new JobSchedule($this->data);
+            $job = new JobDetails($this->data);
             $job->save();
         }
     }

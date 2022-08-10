@@ -2,7 +2,7 @@
 
     namespace App\Http\Controllers;
 
-    use App\Models\JobSchedule;
+    use App\Models\JobDetails;
     use Illuminate\Http\Request;
     use Illuminate\Http\Response;
     use Illuminate\Support\Facades\DB;
@@ -45,10 +45,10 @@
         /**
          * Display the specified resource.
          *
-         * @param  JobSchedule  $jobSchedule
+         * @param  JobDetails  $jobSchedule
          * @return Response
          */
-        public function show(JobSchedule $jobSchedule)
+        public function show(JobDetails $jobSchedule)
         {
             //
         }
@@ -56,10 +56,10 @@
         /**
          * Show the form for editing the specified resource.
          *
-         * @param  JobSchedule  $jobSchedule
+         * @param  JobDetails  $jobSchedule
          * @return Response
          */
-        public function edit(JobSchedule $jobSchedule)
+        public function edit(JobDetails $jobSchedule)
         {
             //
         }
@@ -86,10 +86,10 @@
          * Update the specified resource in storage.
          *
          * @param  Request  $request
-         * @param  JobSchedule  $jobSchedule
+         * @param  JobDetails  $jobSchedule
          * @return Response
          */
-        public function update(Request $request, JobSchedule $jobSchedule)
+        public function update(Request $request, JobDetails $jobSchedule)
         {
             //
         }
@@ -97,10 +97,10 @@
         /**
          * Remove the specified resource from storage.
          *
-         * @param  JobSchedule  $jobSchedule
+         * @param  JobDetails  $jobSchedule
          * @return Response
          */
-        public function destroy(JobSchedule $jobSchedule)
+        public function destroy(JobDetails $jobSchedule)
         {
             //
         }

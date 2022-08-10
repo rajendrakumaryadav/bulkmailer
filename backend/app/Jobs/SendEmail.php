@@ -63,10 +63,10 @@
                 $sendSmtpEmail['htmlContent'] = $this->message[$i]['message'] ?? "";
                 $sendSmtpEmail['sender'] = array('name' => $this->sender_name ?? "", 'email' => $this->from);
                 $sendSmtpEmail['to'] = array(
-                    array('email' => $this->message[$i]['email'], 'name' => 'User'),
+                    array('email' => $this->message[$i]['email'] ?? ""),
                 );
                 if (isset($this->reply_to)) {
-                    $sendSmtpEmail['replyTo'] = array('email' => $this->reply_to ?? "", 'name' => 'User');
+                    $sendSmtpEmail['replyTo'] = array('email' => $this->reply_to ?? "");
                 }
 //                $sendSmtpEmail['headers'] = array('Some-Custom-Name' => 'unique-id-1234');
 //                $sendSmtpEmail['params'] = array('parameter' => 'My param value', 'subject' => 'New Subject');
