@@ -12,12 +12,12 @@
 
         protected $table = 'job_details';
         protected $fillable = [
-            'job_id', 'messageId', 'recipient', 'webhook_id', 'webhook_server_timestamp', 'ts', 'ts_event', 'event',
+            'job_lists_id', 'messageId', 'recipient', 'webhook_id', 'webhook_server_timestamp', 'ts', 'ts_event', 'event',
             'date', 'sending_ip',
         ];
 
-        public function jobList(): BelongsTo
-        {
-            return $this->belongsTo(JobLists::class, 'job_id');
-        }
+//        public function job_lists(): BelongsTo
+//        {
+//            return $this->belongsTo(JobLists::class, 'id');
+//        }
     }

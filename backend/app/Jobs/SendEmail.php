@@ -35,14 +35,20 @@
          * @return void
          *
          */
-        public function __construct(array $message, string $subject, string $reply_to, string $from, $sender_name)
-        {
+        public function __construct(
+            array $message,
+            string $subject,
+            string $reply_to,
+            string $from,
+            $sender_name,
+            $job_list_id
+        ) {
             $this->message = $message;
             $this->subject = $subject;
             $this->reply_to = $reply_to ?? "admin@vvm.org.in";
             $this->from = $from ?? "admin@vvm.org.in";
             $this->sender_name = $sender_name ?? "VVM Official Handle";
-            $this->job_id = "JOB_".uniqid();
+            $this->job_id = $job_list_id;
             $this->config = Configuration::getDefaultConfiguration()->setApiKey('api-key', env('SENDINBLUE_API_KEY'));
         }
 
@@ -73,6 +79,7 @@
 
                 try {
                     $result = $apiInstance->sendTransacEmail($sendSmtpEmail);
+                    Log::info($result);
                     $this->messageId = $result['messageId'];
                     Log::info("Message sent successfully with message id: ".$this->messageId);
                 } catch (Exception $exception) {
@@ -90,10 +97,8 @@
 //                });
 
                 $data = array(
-                    "job_name" => $this->job_id, "messageId" => $this->messageId,
-                    "recipient" => $this->message[$i]['email'], "subject" => $this->subject,
-                    "message" => $this->message[$i]['message'], "reply_to" => $this->reply_to, "from" => $this->from,
-                    "sender_name" => $this->sender_name,
+                    "job_lists_id" => $this->job_id, "messageId" => $this->messageId,
+                    "recipient" => $this->message[$i]['email'],
                 );
                 MailQueue::dispatch($data);
             }

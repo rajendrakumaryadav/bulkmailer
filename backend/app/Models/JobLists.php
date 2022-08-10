@@ -4,7 +4,6 @@
 
     use Illuminate\Database\Eloquent\Factories\HasFactory;
     use Illuminate\Database\Eloquent\Model;
-    use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
     class JobLists extends Model
     {
@@ -15,8 +14,8 @@
             'job_name', 'subject', 'from', 'reply_to', 'sender_name', 'message',
         ];
 
-        public function jobDetails()
-        {
-            return $this->hasMany(JobDetails::class);
-        }
+//        public function job_details()
+//        {
+//            return $this->hasMany(JobDetails::class);
+//        }
     }

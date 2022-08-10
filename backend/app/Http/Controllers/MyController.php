@@ -3,12 +3,12 @@
     namespace App\Http\Controllers;
 
     use App\Jobs\SendEmail;
+    use App\Models\JobLists;
     use Exception;
     use Illuminate\Support\Facades\Request;
     use Illuminate\Support\Facades\Response;
     use Illuminate\Support\Facades\Validator;
     use League\Csv\Reader;
-    use Psy\Readline\Hoa\FileException;
 
     class MyController extends Controller
     {
@@ -70,13 +70,24 @@
                     "email" => $data[$i][count($data[0]) - 1],
                 );
             }
+            $job_id = "JOB_".uniqid();
+            $data = array(
+                "job_name" => $job_id,
+                "subject" => $subject,
+                "message" => $template,
+                "reply_to" => $reply_to,
+                "from" => $from,
+                "sender_name" => $sender_name,
+            );
+            $job_list_id = JobLists::create($data)->id;
+
             // dispatching the job to the queue
-            SendEmail::dispatch($messages, $subject, $reply_to, $from, $sender_name);
+            SendEmail::dispatch($messages, $subject, $reply_to, $from, $sender_name, $job_list_id);
 
             return Response::json(
                 [
                     'success' => 'Email sent successfully',
-                    'status_code' => 200
+                    'status_code' => 200,
                 ]
             );
         }

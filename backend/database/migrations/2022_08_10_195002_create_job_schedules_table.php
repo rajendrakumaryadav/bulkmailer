@@ -1,5 +1,6 @@
 <?php
 
+    use App\Models\JobDetails;
     use Illuminate\Database\Migrations\Migration;
     use Illuminate\Database\Schema\Blueprint;
     use Illuminate\Support\Facades\Schema;
@@ -15,7 +16,7 @@
             Schema::create('job_details', function (Blueprint $table) {
                 $table->id();
                 // add column for job_id
-                $table->foreign('job_id')->references('id')->on('public.job_lists');
+                $table->foreignId('job_lists_id')->index()->constrained();
                 $table->string('recipient');
                 $table->string('messageId')->unique();
                 $table->string("webhook_id")->nullable();

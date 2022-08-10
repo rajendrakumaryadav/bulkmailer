@@ -6,7 +6,6 @@
     use Illuminate\Http\Request;
     use Illuminate\Http\Response;
     use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Log;
     use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
     class JobScheduleController extends Controller
@@ -71,12 +70,12 @@
             }
 
             $data = \request()->post();
-            DB::table('job_schedules')->where('messageId', $data['message-id'])->update([
-                    'webhook_id' => $data['id'] ?? null, 'webhook_server_timestamp' => $data['date'] ?? null,
-                    'ts' => $data['ts'] ?? null, 'ts_event' => $data['ts_event'] ?? null,
-                    'event' => $data['event'] ?? null, 'date' => $data['date'] ?? null,
-                    'sending_ip' => $data['sending_ip'] ?? null,
-                ]);
+            DB::table('job_details')->where('messageId', $data['message-id'])->update([
+                'webhook_id' => $data['id'] ?? null, 'webhook_server_timestamp' => $data['date'] ?? null,
+                'ts' => $data['ts'] ?? null, 'ts_event' => $data['ts_event'] ?? null,
+                'event' => $data['event'] ?? null, 'date' => $data['date'] ?? null,
+                'sending_ip' => $data['sending_ip'] ?? null,
+            ]);
 
             return Response::$statusTexts[ResponseAlias::HTTP_NO_CONTENT];
 

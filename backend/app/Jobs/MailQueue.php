@@ -34,6 +34,6 @@
         public function handle()
         {
             $job = new JobDetails($this->data);
-            $job->save();
+            $status = $job->save();
         }
     }
