@@ -16,8 +16,8 @@
             'date', 'sending_ip',
         ];
 
-//        public function job_lists(): BelongsTo
-//        {
-//            return $this->belongsTo(JobLists::class, 'id');
-//        }
+        public function job_lists(): BelongsTo
+        {
+            return $this->belongsTo(JobLists::class, 'id');
+        }
     }

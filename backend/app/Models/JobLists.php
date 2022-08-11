@@ -14,8 +14,8 @@
             'job_name', 'subject', 'from', 'reply_to', 'sender_name', 'message',
         ];
 
-//        public function job_details()
-//        {
-//            return $this->hasMany(JobDetails::class);
-//        }
+        public function job_details()
+        {
+            return $this->hasMany(JobDetails::class);
+        }
     }
