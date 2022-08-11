@@ -2,6 +2,7 @@
 
     use App\Http\Controllers\JobScheduleController;
     use App\Http\Controllers\MyController;
+    use App\Http\Middleware\CheckRequiredHeader;
     use Illuminate\Support\Facades\Route;
 
     /*
@@ -15,5 +16,4 @@
     |
     */
     Route::post('/sendmail', [MyController::class, 'index'])->name('form.store');
-    Route::post('/mailer-webhook',
-        [JobScheduleController::class, 'addWebhook'])->name('mailer.webhook');
+    Route::post('/mailer-webhook', [JobScheduleController::class, 'addWebhook'])->name('mailer.webhook');

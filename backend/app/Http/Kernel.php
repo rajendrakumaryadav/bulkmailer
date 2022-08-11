@@ -86,5 +86,7 @@
             'signed' => ValidateSignature::class,
             'throttle' => ThrottleRequests::class,
             'verified' => EnsureEmailIsVerified::class,
+//            'check-required-header' => CheckRequiredHeader::class,            CheckRequiredHeader::class,
+
         ];
     }

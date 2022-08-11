@@ -16,9 +16,9 @@
 //    Route::get('/', function () {
 //        return view('form');
 //    })->name('form.index');
-    if (env('APP_DEBUG') === true) {
-        Route::get('/', function () {
-            return view('form');
-        })->name('form.index');
-        Route::post('/', [MyController::class, 'index'])->name('form.store');
-    }
+//    if (env('APP_DEBUG') === true) {
+    //        Route::get('/', function () {
+    //            return view('form');
+    //        })->name('form.index');
+    //        Route::post('/', [MyController::class, 'index'])->name('form.store');
+    //    }
