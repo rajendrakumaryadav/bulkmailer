@@ -59,9 +59,14 @@
          */
         public function handle()
         {
+            $counter = 0;
             $apiInstance = new TransactionalEmailsApi(new Client(), $this->config);
             for ($i = 0; $i < count($this->message); $i++) {
-
+                if ($counter == 10) {
+                    $counter = 0;
+                    sleep(3);
+                }
+                $counter += 1;
                 $sendSmtpEmail = new SendSmtpEmail();
 
 
