@@ -2,6 +2,7 @@
 
     namespace App\Http\Controllers;
 
+    use App\Models\Drafts;
     use Carbon\Carbon;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
@@ -18,13 +19,24 @@
         public function index()
         {
             //   POST /api/create-job
-            $job_id = "DRAFT_ID_".uniqid();
+            $draft_id = "DRAFT_ID_".uniqid();
 
-            return \response()->json([
-                "status_code" => ResponseAlias::HTTP_OK,
-                "job_id" => $job_id,
-                "created_at" => Carbon::now(),
-            ]);
+            $draft = new Drafts();
+            $draft->draft_id = $draft_id;
+            $inserted = $draft->save();
+            if ($inserted) {
+                return \response()->json([
+                    "status_code" => ResponseAlias::HTTP_OK,
+                    "draft_id" => $draft_id,
+                    "created_at" => Carbon::now(),
+                ]);
+            } else {
+                return \response()->json([
+                    "status_code" => ResponseAlias::HTTP_INTERNAL_SERVER_ERROR,
+                    "message" => "Failed to insert.",
+                    "created_at" => Carbon::now(),
+                ], 500);
+            }
         }
 
         /**

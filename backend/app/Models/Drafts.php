@@ -11,5 +11,5 @@
 
         protected $table = "drafts";
         protected $fillable = ['*'];
-        protected $guarded = ['created_at'];
+//        protected $guarded = ['created_at'];
     }

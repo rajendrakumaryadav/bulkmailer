@@ -14,7 +14,7 @@
         {
             Schema::create('drafts', function (Blueprint $table) {
                 $table->id();
-                $table->string("draft_id")->unique();
+                $table->string("draft_id")->unique()->nullable();
                 $table->string("file_path")->nullable();
                 $table->string("from")->nullable();
                 $table->string("reply_to")->nullable();
