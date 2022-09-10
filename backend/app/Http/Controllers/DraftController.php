@@ -27,7 +27,8 @@
             if ($inserted) {
                 return \response()->json([
                     "status_code" => ResponseAlias::HTTP_OK,
-                    "draft_id" => $draft_id,
+                    "id" => $draft->id,
+                    "draft_id" => $draft->draft_id,
                     "created_at" => Carbon::now(),
                 ]);
             } else {
@@ -91,11 +92,14 @@
          *
          * @param  Request  $request
          * @param  int  $id
-         * @return Response
+         * @return JsonResponse
          */
         public function update(Request $request, $id)
         {
-            //
+            return \response()->json([
+                "id" => $id,
+                "request" => $request
+            ]);
         }
 
         /**

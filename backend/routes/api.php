@@ -18,3 +18,4 @@
     Route::post('/sendmail', [MyController::class, 'index'])->name('form.store');
     Route::post('/mailer-webhook', [JobScheduleController::class, 'addWebhook'])->name('mailer.webhook');
     Route::post('/create-job', [DraftController::class, 'index'])->name('draft.new');
+    Route::put('/add_to_draft/{id}', [DraftController::class, 'update'])->name('draft.update');
