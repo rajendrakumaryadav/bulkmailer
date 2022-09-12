@@ -7,6 +7,7 @@
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
     use Illuminate\Http\Response;
+    use Illuminate\Support\Facades\Validator;
     use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
     class DraftController extends Controller
@@ -96,28 +97,30 @@
          */
         public function update(Request $request, $id)
         {
-            $data = $request->request->all();
+            $request = Validator::validate($request->request->all(), [
+                'file_path' => 'string',
+                'subject' => 'string|max:255',
+                'template' => 'string',
+                'from' => 'string',
+                "reply_to" => 'string',
+                'status' => 'integer|in:0,1,2',
+            ]);
+
+            $data = $request;
             $draft = Drafts::find($id);
             $draft->from = $data['from'];
+            $draft->reply_to = $data['reply_to'];
+            $draft->file_path = $data['file_path'];
             $draft->subject = $data['subject'];
             $draft->template = $data['template'];
             $draft->status = $data['status'];
             $draft->save();
 
             $d = Drafts::find($id);
-            return \response()->json([
-                "status_code" => ResponseAlias::HTTP_OK,
-                "id" => $d->id,
-                "draft_id" => $d->draft_id,
-                "from" => $d->from,
-                "subject" => $d->subject,
-                "template" => $d->template,
-                "status" => $d->status,
-            ]);
 
             return \response()->json([
-                "id" => $id,
-                "data" => $data,
+                "status_code" => ResponseAlias::HTTP_OK,
+                "data" => $d,
             ]);
         }
 
