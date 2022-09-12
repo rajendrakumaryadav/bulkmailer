@@ -96,9 +96,28 @@
          */
         public function update(Request $request, $id)
         {
+            $data = $request->request->all();
+            $draft = Drafts::find($id);
+            $draft->from = $data['from'];
+            $draft->subject = $data['subject'];
+            $draft->template = $data['template'];
+            $draft->status = $data['status'];
+            $draft->save();
+
+            $d = Drafts::find($id);
+            return \response()->json([
+                "status_code" => ResponseAlias::HTTP_OK,
+                "id" => $d->id,
+                "draft_id" => $d->draft_id,
+                "from" => $d->from,
+                "subject" => $d->subject,
+                "template" => $d->template,
+                "status" => $d->status,
+            ]);
+
             return \response()->json([
                 "id" => $id,
-                "request" => $request
+                "data" => $data,
             ]);
         }
 
