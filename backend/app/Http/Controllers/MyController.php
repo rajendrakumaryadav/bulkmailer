@@ -28,8 +28,7 @@
         public function index()
         {
             $validated = Validator::make(Request::all(), [
-                'file' => 'required|file|mimes:csv,txt',
-//                'files' => 'file',
+                'file' => 'required|file|mimes:csv',
                 'subject' => 'required|string',
                 'template' => 'required|string',
                 'reply_to' => 'email',

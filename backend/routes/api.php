@@ -19,3 +19,6 @@
     Route::post('/mailer-webhook', [JobScheduleController::class, 'addWebhook'])->name('mailer.webhook');
     Route::post('/create-job', [DraftController::class, 'index'])->name('draft.new');
     Route::put('/add_to_draft/{id}', [DraftController::class, 'update'])->name('draft.update');
+
+    Route::get('/get-drafts', [DraftController::class, 'getDrafts'])->name('draft.get');
+    Route::delete('/delete-task/{id}', [DraftController::class, 'destroy'])->name('draft.delete');

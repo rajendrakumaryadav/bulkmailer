@@ -4,9 +4,11 @@
 
     use App\Models\Drafts;
     use Carbon\Carbon;
+    use Illuminate\Database\Eloquent\ModelNotFoundException;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
     use Illuminate\Http\Response;
+    use Illuminate\Support\Facades\DB;
     use Illuminate\Support\Facades\Validator;
     use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
@@ -30,6 +32,7 @@
                     "status_code" => ResponseAlias::HTTP_OK,
                     "id" => $draft->id,
                     "draft_id" => $draft->draft_id,
+                    "status" => 0,
                     "created_at" => Carbon::now(),
                 ]);
             } else {
@@ -93,18 +96,23 @@
          *
          * @param  Request  $request
          * @param  int  $id
-         * @return JsonResponse
+         * @return mixed
          */
         public function update(Request $request, $id)
         {
-            $request = Validator::validate($request->request->all(), [
-                'file_path' => 'string',
+            $request = Validator::make($request->all(), [
+                'file' => 'file|mimes:csv',
                 'subject' => 'string|max:255',
                 'template' => 'string',
                 'from' => 'string',
                 "reply_to" => 'string',
-                'status' => 'integer|in:0,1,2',
             ]);
+
+            if (count($request->errors()) > 0) {
+                return $request->errors();
+            }
+
+            return $request;
 
             $data = $request;
             $draft = Drafts::find($id);
@@ -128,10 +136,38 @@
          * Remove the specified resource from storage.
          *
          * @param  int  $id
-         * @return Response
+         * @return JsonResponse
          */
         public function destroy($id)
         {
-            //
+            try {
+                $drafts = DB::table('drafts')->where('id', $id);
+                if ($drafts->delete() > 0) {
+                    return \response()->json([
+                        "status_code" => ResponseAlias::HTTP_OK,
+                        "message" => "Draft deleted successfully.",
+                    ]);
+                } else {
+                    return \response()->json([
+                        "status_code" => ResponseAlias::HTTP_NOT_FOUND,
+                        "message" => "Draft does not exists.",
+                    ], 404);
+                }
+            } catch (ModelNotFoundException $e) {
+                return \response()->json([
+                    "status_code" => ResponseAlias::HTTP_INTERNAL_SERVER_ERROR,
+                    "message" => "Unknown error occurred.",
+                ], 500);
+            }
+        }
+
+        public function getDrafts()
+        {
+            $drafts = DB::table('drafts')->where('status', '=', '0')->get();
+
+            return \response()->json([
+                "status_code" => ResponseAlias::HTTP_OK,
+                "data" => $drafts,
+            ]);
         }
     }
