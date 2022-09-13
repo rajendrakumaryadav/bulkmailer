@@ -9,7 +9,7 @@
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\DB;
-    use Illuminate\Validation\ValidationException;
+    use Illuminate\Support\Facades\Validator;
     use Symfony\Component\HttpFoundation\Response;
     use function response;
 
@@ -98,17 +98,27 @@
          * @param  int  $id
          * @return JsonResponse
          */
-//        public function update($id)
-//        {
-//
-//        }
-
-
         public function modify(int $id): JsonResponse
         {
             // POST /api/add_to_draft/{id}
-            $draft = Drafts::find($id);
 
+            $validated = Validator::make(request()->all(), [
+                "subject" => "string",
+                "sender_name" => "string",
+                "template" => "string",
+                "from" => "email",
+                "reply_to" => "email",
+                "file" => "file|mimes:csv",
+            ]);
+            if ($validated->fails()) {
+                return response()->json([
+                    "status_code" => Response::HTTP_BAD_REQUEST,
+                    "message" => $validated->errors(),
+                    "created_at" => Carbon::now(),
+                ], 400);
+            }
+
+            $draft = Drafts::find($id);
             if (!$draft) {
                 return response()->json([
                     "status_code" => Response::HTTP_NOT_FOUND,
@@ -116,7 +126,6 @@
                     "created_at" => Carbon::now(),
                 ], 404);
             }
-
             if (\request()->file('file')) {
                 $file = \request()->file('file');
                 try {
@@ -132,9 +141,9 @@
             $draft->status = 0;
             $draft->reply_to = \request()->input('reply_to') ?? $draft->reply_to;
 
-
             if ($draft->save()) {
                 $draft->file_path = url($draft->file_path);
+
                 return response()->json([
                     "status_code" => Response::HTTP_OK,
                     "message" => "Draft updated successfully.",
@@ -148,8 +157,6 @@
                     "created_at" => Carbon::now(),
                 ], 500);
             }
-
-
         }
 
         /**
