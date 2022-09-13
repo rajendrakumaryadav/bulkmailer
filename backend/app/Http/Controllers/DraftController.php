@@ -4,13 +4,14 @@
 
     use App\Models\Drafts;
     use Carbon\Carbon;
+    use Exception;
     use Illuminate\Database\Eloquent\ModelNotFoundException;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
-    use Illuminate\Http\Response;
     use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Validator;
-    use Symfony\Component\HttpFoundation\Response as ResponseAlias;
+    use Illuminate\Validation\ValidationException;
+    use Symfony\Component\HttpFoundation\Response;
+    use function response;
 
     class DraftController extends Controller
     {
@@ -28,16 +29,16 @@
             $draft->draft_id = $draft_id;
             $inserted = $draft->save();
             if ($inserted) {
-                return \response()->json([
-                    "status_code" => ResponseAlias::HTTP_OK,
+                return response()->json([
+                    "status_code" => Response::HTTP_OK,
                     "id" => $draft->id,
                     "draft_id" => $draft->draft_id,
                     "status" => 0,
                     "created_at" => Carbon::now(),
                 ]);
             } else {
-                return \response()->json([
-                    "status_code" => ResponseAlias::HTTP_INTERNAL_SERVER_ERROR,
+                return response()->json([
+                    "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR,
                     "message" => "Failed to insert.",
                     "created_at" => Carbon::now(),
                 ], 500);
@@ -94,43 +95,76 @@
         /**
          * Update the specified resource in storage.
          *
-         * @param  Request  $request
          * @param  int  $id
-         * @return mixed
+         * @return JsonResponse
          */
-        public function update(Request $request, $id)
-        {
-            $request = Validator::make($request->all(), [
-                'file' => 'file|mimes:csv',
-                'subject' => 'string|max:255',
-                'template' => 'string',
-                'from' => 'string',
-                "reply_to" => 'string',
-            ]);
+//        public function update($id)
+//        {
+//
+//        }
 
-            if (count($request->errors()) > 0) {
-                return $request->errors();
+
+        public function modify(int $id): JsonResponse
+        {
+            // POST /api/add_to_draft/{id}
+            $draft = Drafts::find($id);
+
+            if (!$draft) {
+                return response()->json([
+                    "status_code" => Response::HTTP_NOT_FOUND,
+                    "message" => "Draft not found.",
+                    "created_at" => Carbon::now(),
+                ], 404);
             }
 
-            return $request;
+            if (\request()->file('file')) {
+                $file = \request()->file('file');
+                try {
+                    $draft->file_path = $file->move('storage/draft/', $this->get_unique_filename($file))
+                        ?? $draft->file_path;
+                } catch (Exception $e) {
+                    return \Illuminate\Support\Facades\Response::json(['error' => $e->getMessage()]);
+                }
+            }
+            $draft->subject = \request()->input('subject') ?? $draft->subject;
+            $draft->template = \request()->input('template') ?? $draft->template;
+            $draft->from = \request()->input('from') ?? $draft->from;
+            $draft->status = 0;
+            $draft->reply_to = \request()->input('reply_to') ?? $draft->reply_to;
 
-            $data = $request;
-            $draft = Drafts::find($id);
-            $draft->from = $data['from'];
-            $draft->reply_to = $data['reply_to'];
-            $draft->file_path = $data['file_path'];
-            $draft->subject = $data['subject'];
-            $draft->template = $data['template'];
-            $draft->status = $data['status'];
-            $draft->save();
 
-            $d = Drafts::find($id);
+            if ($draft->save()) {
+                $draft->file_path = url($draft->file_path);
+                return response()->json([
+                    "status_code" => Response::HTTP_OK,
+                    "message" => "Draft updated successfully.",
+                    "data" => $draft,
+                    "created_at" => Carbon::now(),
+                ]);
+            } else {
+                return response()->json([
+                    "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR,
+                    "message" => "Failed to update draft.",
+                    "created_at" => Carbon::now(),
+                ], 500);
+            }
 
-            return \response()->json([
-                "status_code" => ResponseAlias::HTTP_OK,
-                "data" => $d,
-            ]);
+
         }
+
+        /**
+         * This method accepts file object and generate a unique filename.
+         * It consists of uniquedata with timestamp and original filename.
+         * @param $file
+         * @return string
+         */
+        private function get_unique_filename($file): string
+        {
+            $original_name = $file->getClientOriginalName();
+
+            return uniqid()."_".date("Y-m-d-H-i-s", time())."_".$original_name;
+        }
+
 
         /**
          * Remove the specified resource from storage.
@@ -143,19 +177,19 @@
             try {
                 $drafts = DB::table('drafts')->where('id', $id);
                 if ($drafts->delete() > 0) {
-                    return \response()->json([
-                        "status_code" => ResponseAlias::HTTP_OK,
+                    return response()->json([
+                        "status_code" => Response::HTTP_OK,
                         "message" => "Draft deleted successfully.",
                     ]);
                 } else {
-                    return \response()->json([
-                        "status_code" => ResponseAlias::HTTP_NOT_FOUND,
+                    return response()->json([
+                        "status_code" => Response::HTTP_NOT_FOUND,
                         "message" => "Draft does not exists.",
                     ], 404);
                 }
             } catch (ModelNotFoundException $e) {
-                return \response()->json([
-                    "status_code" => ResponseAlias::HTTP_INTERNAL_SERVER_ERROR,
+                return response()->json([
+                    "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR,
                     "message" => "Unknown error occurred.",
                 ], 500);
             }
@@ -165,8 +199,8 @@
         {
             $drafts = DB::table('drafts')->where('status', '=', '0')->get();
 
-            return \response()->json([
-                "status_code" => ResponseAlias::HTTP_OK,
+            return response()->json([
+                "status_code" => Response::HTTP_OK,
                 "data" => $drafts,
             ]);
         }
