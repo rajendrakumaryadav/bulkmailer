@@ -3,8 +3,10 @@
     namespace App\Http\Controllers;
 
     use App\Jobs\SendEmail;
+    use App\Models\Drafts;
     use App\Models\JobLists;
     use Exception;
+    use Illuminate\Support\Facades\File;
     use Illuminate\Support\Facades\Request;
     use Illuminate\Support\Facades\Response;
     use Illuminate\Support\Facades\Validator;
@@ -28,12 +30,10 @@
         public function index()
         {
             $validated = Validator::make(Request::all(), [
-                'file' => 'required|file|mimes:csv',
-                'subject' => 'required|string',
-                'template' => 'required|string',
-                'reply_to' => 'email',
-                'from' => 'required|email',
-                'sender_name' => 'required|string',
+                'file' => 'required_without:file_path|file|mimes:csv,txt',
+                'file_path' => 'required_without:file|url|active_url', 'subject' => 'required|string',
+                'template' => 'required|string', 'reply_to' => 'email', 'from' => 'required|email',
+                'sender_name' => 'required|string', 'draft_id' => 'integer',    // optional direct messages can be sent.
             ]);
 
             if (count($validated->errors()) > 0) {
@@ -41,16 +41,25 @@
             }
 
 
-            $file = Request::file('file');
-//            $files = Request::file('files');
+            $file = Request::file('file') ?? null;
+            $file_url = Request::post('file_path') ?? null;
             $template = Request::post('template');
-            $reply_to = Request::post('reply_to') ?? "demo@demo.com";
-            $subject = Request::post('subject') ?? "Demo";
-            $from = Request::post('from') ?? "admin@vvm.org.in";
-            $sender_name = Request::post('sender_name') ?? "VVM Official Handle";
-
+            $reply_to = Request::post('reply_to') ?? Request::post('from');
+            $subject = Request::post('subject') ?? 'No Subject';
+            $from = Request::post('from');
+            $sender_name = Request::post('sender_name') ?? "Official Email";
+            $draft_id = Request::post('draft_id') ?? null;
             try {
-                $this->filepath = $file->move('storage/data/', $this->get_unique_filename($file));
+                // file path have url them return true
+                if (!($file_url == null)) {
+                    $current_url = url('/');
+                    $draft_file_path = explode($current_url.'/', $file_url, 2);
+                    if (file_exists($draft_file_path[1])) {
+                        $this->filepath = $draft_file_path[1];
+                    }
+                } else {
+                    $this->filepath = $file->move('storage/data/', $this->get_unique_filename($file));
+                }
             } catch (Exception $e) {
                 return Response::json(['error' => $e->getMessage()]);
             }
@@ -61,34 +70,27 @@
             foreach ($records as $record) {
                 $data[] = $record;
             }
+            
             $messages = array();
-
             for ($i = 0; $i < count($data); $i++) {
                 $messages[] = array(
-                    "message" => $this->format($template, $data[$i]),
-                    "email" => $data[$i][count($data[0]) - 1],
+                    "message" => $this->format($template, $data[$i]), "email" => $data[$i][count($data[0]) - 1],
                 );
             }
             $job_id = "JOB_".uniqid();
             $data = array(
-                "job_name" => $job_id,
-                "subject" => $subject,
-                "message" => $template,
-                "reply_to" => $reply_to,
-                "from" => $from,
-                "sender_name" => $sender_name,
+                "job_name" => $job_id, "subject" => $subject, "message" => $template, "reply_to" => $reply_to,
+                "from" => $from, "sender_name" => $sender_name, "draft_id" => $draft_id,
             );
             $job_list_id = JobLists::create($data)->id;
-
+            Drafts::where('id', $draft_id)->update(['status' => 1]);
             // dispatching the job to the queue
             SendEmail::dispatch($messages, $subject, $reply_to, $from, $sender_name, $job_list_id);
+            Drafts::where('id', $draft_id)->update(['status' => 2]);
 
-            return Response::json(
-                [
-                    'success' => 'Email sent successfully',
-                    'status_code' => 200,
-                ]
-            );
+            return Response::json([
+                'success' => 'Email sent successfully', 'status_code' => 200,
+            ]);
         }
 
         /**
@@ -129,5 +131,4 @@
                 return '{#'.$k.'#}';
             }, array_keys($vars)), array_values($vars), $msg);
         }
-
     }

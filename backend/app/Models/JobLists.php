@@ -11,11 +11,15 @@
 
         protected $table = 'job_lists';
         protected $fillable = [
-            'job_name', 'subject', 'from', 'reply_to', 'sender_name', 'message',
+            'job_name', 'subject', 'from', 'reply_to', 'sender_name', 'message', 'draft_id'
         ];
 
         public function job_details()
         {
             return $this->hasMany(JobDetails::class);
+        }
+
+        public function drafts() {
+            return $this->hasOne(Drafts::class);
         }
     }

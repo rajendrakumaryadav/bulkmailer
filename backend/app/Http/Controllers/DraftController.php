@@ -9,7 +9,6 @@
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Validator;
     use Symfony\Component\HttpFoundation\Response;
     use function response;
 
@@ -93,6 +92,7 @@
             try {
                 $draft = Drafts::findOrFail($id);
                 $draft->file_path = url($draft->file_path);
+
                 return response()->json([
                     "status_code" => Response::HTTP_OK,
                     "data" => $draft,
@@ -145,7 +145,7 @@
             if (\request()->file('file')) {
                 $file = \request()->file('file');
                 try {
-                    $draft->file_path = $file->move('storage/draft/', $this->get_unique_filename($file))
+                    $draft->file_path = $file->move('storage/draft/', $this->get_unique_filename($id, $file))
                         ?? $draft->file_path;
                 } catch (Exception $e) {
                     return \Illuminate\Support\Facades\Response::json(['error' => $e->getMessage()]);
@@ -182,11 +182,11 @@
          * @param $file
          * @return string
          */
-        private function get_unique_filename($file): string
+        private function get_unique_filename($draft_id, $file): string
         {
             $original_name = $file->getClientOriginalName();
 
-            return uniqid()."_".date("Y-m-d-H-i-s", time())."_".$original_name;
+            return $draft_id.'_'.uniqid()."_".date("Y-m-d-H-i-s", time())."_".$original_name;
         }
 
 

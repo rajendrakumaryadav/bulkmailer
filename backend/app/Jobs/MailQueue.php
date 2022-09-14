@@ -6,6 +6,7 @@
     use Illuminate\Bus\Queueable;
     use Illuminate\Contracts\Queue\ShouldQueue;
     use Illuminate\Foundation\Bus\Dispatchable;
+    use Illuminate\Log\Logger;
     use Illuminate\Queue\InteractsWithQueue;
     use Illuminate\Queue\SerializesModels;
 
@@ -33,6 +34,8 @@
          */
         public function handle()
         {
+            logger()->info("Job started");
+            \logger()->alert($this->data);
             $job = new JobDetails($this->data);
             $status = $job->save();
         }

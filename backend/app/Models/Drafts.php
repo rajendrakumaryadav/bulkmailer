@@ -4,6 +4,7 @@
 
     use Illuminate\Database\Eloquent\Factories\HasFactory;
     use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
     class Drafts extends Model
     {
@@ -11,5 +12,11 @@
 
         protected $table = "drafts";
         protected $fillable = ['*'];
+
 //        protected $guarded = ['created_at'];
+
+        public function job_lists(): BelongsTo
+        {
+            return $this->belongsTo(JobLists::class);
+        }
     }
