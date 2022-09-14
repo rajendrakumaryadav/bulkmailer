@@ -70,7 +70,7 @@
             foreach ($records as $record) {
                 $data[] = $record;
             }
-            
+
             $messages = array();
             for ($i = 0; $i < count($data); $i++) {
                 $messages[] = array(
@@ -121,7 +121,7 @@
         {
             $vars = (array) $vars;
 
-            $msg = preg_replace_callback('#{}#', function () {
+            $msg = preg_replace_callback('#{ }#', function () {
                 static $i = 0;
 
                 return '{#'.($i++).'#}';
