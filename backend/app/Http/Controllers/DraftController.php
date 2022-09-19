@@ -116,23 +116,6 @@
         public function modify(int $id): JsonResponse
         {
             // POST /api/add_to_draft/{id}
-//
-//            $validated = Validator::make(request()->all(), [
-//                "subject" => "string",
-//                "sender_name" => "string",
-//                "template" => "string",
-//                "from" => "email",
-//                "reply_to" => "email",
-//                "file" => "file|mimes:csv",
-//            ]);
-//
-//            if ($validated->fails()) {
-//                return response()->json([
-//                    "status_code" => Response::HTTP_BAD_REQUEST,
-//                    "message" => $validated->errors(),
-//                    "created_at" => Carbon::now(),
-//                ], 400);
-//            }
 
             $draft = Drafts::find($id);
             if (!$draft) {
