@@ -14,7 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::table('drafts', function (Blueprint $table) {
-            $table->foreignId('schedule_id')->nullable()->constrained('schedules')->cascadeOnDelete();
+            $table->boolean('is_scheduled')->default(false);
+            $table->foreignId('schedule_id')->nullable()
+                ->constrained('schedules')->cascadeOnDelete();
         });
     }
 
@@ -27,7 +29,6 @@ return new class extends Migration
     {
         Schema::table('drafts', function (Blueprint $table) {
             $table->dropForeign(['schedule_id']);
-            $table->dropIndex(['schedule_id']);
             $table->dropColumn('schedule_id');
         });
     }

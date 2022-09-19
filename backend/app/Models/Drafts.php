@@ -14,8 +14,6 @@
         protected $table = "drafts";
         protected $fillable = ['*'];
 
-//        protected $guarded = ['created_at'];
-
         public function job_lists(): BelongsTo
         {
             return $this->belongsTo(JobLists::class);

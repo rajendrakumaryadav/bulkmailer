@@ -3,12 +3,14 @@
     namespace App\Http\Controllers;
 
     use App\Models\Drafts;
+    use App\Models\Schedules;
     use Carbon\Carbon;
     use Exception;
     use Illuminate\Database\Eloquent\ModelNotFoundException;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Validator;
     use Symfony\Component\HttpFoundation\Response;
     use function response;
 
@@ -29,16 +31,12 @@
             $inserted = $draft->save();
             if ($inserted) {
                 return response()->json([
-                    "status_code" => Response::HTTP_OK,
-                    "id" => $draft->id,
-                    "draft_id" => $draft->draft_id,
-                    "status" => 0,
-                    "created_at" => Carbon::now(),
+                    "status_code" => Response::HTTP_OK, "id" => $draft->id, "draft_id" => $draft->draft_id,
+                    "status" => 0, "created_at" => Carbon::now(),
                 ]);
             } else {
                 return response()->json([
-                    "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR,
-                    "message" => "Failed to insert.",
+                    "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR, "message" => "Failed to insert.",
                     "created_at" => Carbon::now(),
                 ], 500);
             }
@@ -94,14 +92,11 @@
                 $draft->file_path = url($draft->file_path);
 
                 return response()->json([
-                    "status_code" => Response::HTTP_OK,
-                    "data" => $draft,
-                    "created_at" => $draft->created_at,
+                    "status_code" => Response::HTTP_OK, "data" => $draft, "created_at" => $draft->created_at,
                 ]);
             } catch (ModelNotFoundException $e) {
                 return response()->json([
-                    "status_code" => Response::HTTP_NOT_FOUND,
-                    "message" => "Draft not found.",
+                    "status_code" => Response::HTTP_NOT_FOUND, "message" => "Draft not found.",
                     "created_at" => Carbon::now(),
                 ], 404);
             }
@@ -116,20 +111,35 @@
         public function modify(int $id): JsonResponse
         {
             // POST /api/add_to_draft/{id}
+            $validator = Validator::make(request()->all(), [
+                    'file' => 'required_without:file_path|mimes:csv|max:2048',
+                    'file_path' => 'required_without:file|url',
+                    'from' => 'email',
+                    'reply_to' => 'email',
+                    'sender_name' => 'string',
+                    'subject' => 'string',
+                    'template' => 'string',
+                    'is_scheduled' => 'in:0,1',
+                ]);
+                if (count($validator->errors())) {
+                    return response()->json([
+                        "status_code" => Response::HTTP_BAD_REQUEST, "message" => $validator->errors(),
+                        "created_at" => Carbon::now(),
+                    ], 400);
+                }
 
             $draft = Drafts::find($id);
             if (!$draft) {
                 return response()->json([
-                    "status_code" => Response::HTTP_NOT_FOUND,
-                    "message" => "Draft not found.",
+                    "status_code" => Response::HTTP_NOT_FOUND, "message" => "Draft not found.",
                     "created_at" => Carbon::now(),
                 ], 404);
             }
             if (\request()->file('file')) {
                 $file = \request()->file('file');
                 try {
-                    $draft->file_path = $file->move('storage/draft/', $this->get_unique_filename($id, $file))
-                        ?? $draft->file_path;
+                    $draft->file_path = $file->move('storage/draft/',
+                        $this->get_unique_filename($id, $file)) ?? $draft->file_path;
                 } catch (Exception $e) {
                     return \Illuminate\Support\Facades\Response::json(['error' => $e->getMessage()]);
                 }
@@ -140,20 +150,49 @@
             $draft->sender_name = \request()->input('sender_name') ?? $draft->sender_name;
             $draft->status = 0;
             $draft->reply_to = \request()->input('reply_to') ?? $draft->reply_to;
-
+            $draft->is_scheduled = \request()->input('is_scheduled') ?? $draft->is_scheduled;
+            if ($draft->is_scheduled) {
+                $validator = Validator::make(request()->all(), [
+                    'file' => 'required_without:file_path|mimes:csv|max:2048',
+                    'file_path' => 'required_without:file|url', 'from' => 'required|email', 'reply_to' => 'email',
+                    'sender_name' => 'required|string', 'subject' => 'required', 'template' => 'required',
+                    'is_scheduled' => 'required|in:0,1',
+                    'schedule_name' => 'required|string',
+                    'schedule_datetime' => 'required|date|date_format:Y-m-d H:i:s|after:now',
+                ]);
+                if (count($validator->errors())) {
+                    return response()->json([
+                        "status_code" => Response::HTTP_BAD_REQUEST, "message" => $validator->errors(),
+                        "created_at" => Carbon::now(),
+                    ], 400);
+                }
+                $schedule = new Schedules();
+                if (isset($draft->schedule_id)){
+                    try {
+                        Schedules::findOrFail($draft->schedule_id);
+                    } catch (ModelNotFoundException $e) {
+                        return response()->json([
+                            "status_code" => Response::HTTP_NOT_FOUND,
+                            "message" => "Schedule not found.",
+                            "created_at" => Carbon::now(),
+                        ], 404);
+                    }
+                } else {
+                    $schedule->name = \request()->input('schedule_name') ?? null;
+                    $schedule->schedule_time = date('H:i:s', strtotime(\request()->input('schedule_datetime'))) ?? null;
+                    $schedule->schedule_date = date('Y-m-d', strtotime(\request()->input('schedule_datetime'))) ?? null;
+                    $draft->schedule_id = $schedule->save() ? $schedule->id : null;
+                }
+            }
             if ($draft->save()) {
                 $draft->file_path = url($draft->file_path);
-
                 return response()->json([
-                    "status_code" => Response::HTTP_OK,
-                    "message" => "Draft updated successfully.",
-                    "data" => $draft,
+                    "status_code" => Response::HTTP_OK, "message" => "Draft updated successfully.", "data" => $draft,
                     "created_at" => Carbon::now(),
                 ]);
             } else {
                 return response()->json([
-                    "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR,
-                    "message" => "Failed to update draft.",
+                    "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR, "message" => "Failed to update draft.",
                     "created_at" => Carbon::now(),
                 ], 500);
             }
@@ -185,19 +224,16 @@
                 $drafts = DB::table('drafts')->where('id', $id);
                 if ($drafts->delete() > 0) {
                     return response()->json([
-                        "status_code" => Response::HTTP_OK,
-                        "message" => "Draft deleted successfully.",
+                        "status_code" => Response::HTTP_OK, "message" => "Draft deleted successfully.",
                     ]);
                 } else {
                     return response()->json([
-                        "status_code" => Response::HTTP_NOT_FOUND,
-                        "message" => "Draft does not exists.",
+                        "status_code" => Response::HTTP_NOT_FOUND, "message" => "Draft does not exists.",
                     ], 404);
                 }
             } catch (ModelNotFoundException $e) {
                 return response()->json([
-                    "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR,
-                    "message" => "Unknown error occurred.",
+                    "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR, "message" => "Unknown error occurred.",
                 ], 500);
             }
         }
@@ -207,8 +243,7 @@
             $drafts = DB::table('drafts')->where('status', '=', '0')->get();
 
             return response()->json([
-                "status_code" => Response::HTTP_OK,
-                "data" => $drafts,
+                "status_code" => Response::HTTP_OK, "data" => $drafts,
             ]);
         }
     }
