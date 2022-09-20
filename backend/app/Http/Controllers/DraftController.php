@@ -9,7 +9,9 @@
     use Illuminate\Database\Eloquent\ModelNotFoundException;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
+    use Illuminate\Log\Logger;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Log;
     use Illuminate\Support\Facades\Validator;
     use Symfony\Component\HttpFoundation\Response;
     use function response;
@@ -112,21 +114,21 @@
         {
             // POST /api/add_to_draft/{id}
             $validator = Validator::make(request()->all(), [
-                    'file' => 'required_without:file_path|mimes:csv|max:2048',
-                    'file_path' => 'required_without:file|url',
-                    'from' => 'email',
-                    'reply_to' => 'email',
-                    'sender_name' => 'string',
-                    'subject' => 'string',
-                    'template' => 'string',
-                    'is_scheduled' => 'in:0,1',
-                ]);
-                if (count($validator->errors())) {
-                    return response()->json([
-                        "status_code" => Response::HTTP_BAD_REQUEST, "message" => $validator->errors(),
-                        "created_at" => Carbon::now(),
-                    ], 400);
-                }
+                'file' => 'required_without:file_path|mimes:csv,txt',
+                'file_path' => 'required_without:file|url',
+                'from' => 'email',
+                'reply_to' => 'email',
+                'sender_name' => 'string',
+                'subject' => 'string',
+                'template' => 'string',
+                'is_scheduled' => 'in:0,1',
+            ]);
+            if (count($validator->errors())) {
+                return response()->json([
+                    "status_code" => Response::HTTP_BAD_REQUEST, "message" => $validator->errors(),
+                    "created_at" => Carbon::now(),
+                ], 400);
+            }
 
             $draft = Drafts::find($id);
             if (!$draft) {
@@ -153,7 +155,7 @@
             $draft->is_scheduled = \request()->input('is_scheduled') ?? $draft->is_scheduled;
             if ($draft->is_scheduled) {
                 $validator = Validator::make(request()->all(), [
-                    'file' => 'required_without:file_path|mimes:csv|max:2048',
+                    'file' => 'required_without:file_path|mimes:csv,txt',
                     'file_path' => 'required_without:file|url', 'from' => 'required|email', 'reply_to' => 'email',
                     'sender_name' => 'required|string', 'subject' => 'required', 'template' => 'required',
                     'is_scheduled' => 'required|in:0,1',
@@ -161,15 +163,18 @@
                 ]);
                 if (count($validator->errors())) {
                     return response()->json([
-                        "status_code" => Response::HTTP_BAD_REQUEST, "message" => $validator->errors(),
+                        "status_code" => Response::HTTP_BAD_REQUEST,
+                        "message" => $validator->errors(),
                         "created_at" => Carbon::now(),
                     ], 400);
                 }
                 $draft->scheduled_at = \request()->input('schedule_datetime');
                 $draft->is_schedule_active = 1;
             }
+            dd($draft->file_path);
             if ($draft->save()) {
                 $draft->file_path = url($draft->file_path);
+
                 return response()->json([
                     "status_code" => Response::HTTP_OK, "message" => "Draft updated successfully.", "data" => $draft,
                     "created_at" => Carbon::now(),
