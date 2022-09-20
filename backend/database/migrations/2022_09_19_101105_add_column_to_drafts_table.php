@@ -18,7 +18,7 @@ return new class extends Migration
 //            $table->foreignId('schedule_id')->nullable()
 //                ->constrained('schedules')->cascadeOnDelete();
             $table->dateTime('scheduled_at')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->boolean('is_active')->default(false);
         });
     }
 
