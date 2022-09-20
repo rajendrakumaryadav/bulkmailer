@@ -9,9 +9,7 @@
     use Illuminate\Database\Eloquent\ModelNotFoundException;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
-    use Illuminate\Log\Logger;
     use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Log;
     use Illuminate\Support\Facades\Validator;
     use Symfony\Component\HttpFoundation\Response;
     use function response;
@@ -114,8 +112,8 @@
         {
             // POST /api/add_to_draft/{id}
             $validator = Validator::make(request()->all(), [
-                'file' => 'required_without:file_path|mimes:csv,txt',
-                'file_path' => 'required_without:file|url',
+                'file' => 'nullable|mimes:csv,txt',
+                'file_path' => 'nullable|url',
                 'from' => 'email',
                 'reply_to' => 'email',
                 'sender_name' => 'string',
@@ -143,7 +141,11 @@
                     $draft->file_path = $file->move('storage/draft/',
                         $this->get_unique_filename($id, $file)) ?? $draft->file_path;
                 } catch (Exception $e) {
-                    return \Illuminate\Support\Facades\Response::json(['error' => $e->getMessage()]);
+                    return response()->json(['error' => $e->getMessage()]);
+                }
+            } else {
+                if (\request()->file('file_path')) {
+                    $draft->file_path = $this->extract_file_path_from_url(\request()->input('file_path')) ?? $this->extract_file_path_from_url($draft->file_path);
                 }
             }
             $draft->subject = \request()->input('subject') ?? $draft->subject;
@@ -152,6 +154,10 @@
             $draft->sender_name = \request()->input('sender_name') ?? $draft->sender_name;
             $draft->status = 0;
             $draft->reply_to = \request()->input('reply_to') ?? $draft->reply_to;
+            if ($draft->reply_to == null) {
+                $draft->reply_to = $draft->from;
+
+            }
             $draft->is_scheduled = \request()->input('is_scheduled') ?? $draft->is_scheduled;
             if ($draft->is_scheduled) {
                 $validator = Validator::make(request()->all(), [
@@ -171,7 +177,6 @@
                 $draft->scheduled_at = \request()->input('schedule_datetime');
                 $draft->is_schedule_active = 1;
             }
-            dd($draft->file_path);
             if ($draft->save()) {
                 $draft->file_path = url($draft->file_path);
 
@@ -200,6 +205,16 @@
             return $draft_id.'_'.uniqid()."_".date("Y-m-d-H-i-s", time())."_".$original_name;
         }
 
+        /**
+         * @param $url
+         * @return string
+         */
+        public function extract_file_path_from_url($url): string
+        {
+            $url = explode(url('/'), $url);
+
+            return $url[1];
+        }
 
         /**
          * Remove the specified resource from storage.

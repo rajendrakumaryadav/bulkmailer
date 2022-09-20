@@ -2,10 +2,9 @@
 
     namespace App\Console\Commands;
 
-    use App\Models\Drafts;
+    use Carbon\Carbon;
     use Illuminate\Console\Command;
     use Illuminate\Support\Facades\DB;
-    use function MongoDB\BSON\toJSON;
 
     class AutoProcessScheduledDrafts extends Command
     {
@@ -27,24 +26,24 @@
         /**
          * Execute the console command.
          *
-         * @return int
+         * @return void
          */
         public function handle()
         {
-           logger('AutoProcessScheduledDrafts command is running');
-           $drafts_with_active_schedule = DB::table('drafts')
-               ->where('is_scheduled', "=",true)
-               ->where('is_schedule_active', '=', true)
-               ->get();
-              foreach ($drafts_with_active_schedule as $draft) {
-                    if ($draft->is_scheduled && $draft->is_schedule_active) {
-                        if ($draft->scheduled_at <= now()) {
-                            Drafts::find($draft->id)->update([
-                               'is_schedule_active' => false
-                            ]);
-                            logger("Draft with details " . $drafts_with_active_schedule . " is being published");
-                        }
+            $drafts_with_active_schedule = DB::table('drafts')
+                ->where('is_scheduled', "=", true)
+                ->where('is_schedule_active', '=', true)
+                ->get();
+            foreach ($drafts_with_active_schedule as $draft) {
+                if ($draft->is_scheduled && $draft->is_schedule_active) {
+                    $date_now = date_format(now(), "Y-m-d H:i");
+                    $record_date = date_format(new Carbon($draft->scheduled_at), 'Y-m-d H:i');
+                    if (Carbon::parse($date_now)->eq(Carbon::parse($record_date))) {
+                        logger("This task will execute now");
+                        logger(DB::table('drafts')->where('id', $draft->id)
+                            ->update(['is_scheduled' => false]));
                     }
-              }
+                }
+            }
         }
     }
