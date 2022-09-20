@@ -14,8 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('drafts', function (Blueprint $table) {
-            $table->dateTime('scheduled_at')->nullable();
-            $table->boolean('is_schedule_active')->default(false);
+            $table->boolean('is_scheduled')->default(false);
         });
     }
 
@@ -27,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('drafts', function (Blueprint $table) {
-            $table->dropColumn('is_schedule_active', 'scheduled_at');
+            $table->dropColumn('is_scheduled');
         });
     }
 };

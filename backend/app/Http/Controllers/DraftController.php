@@ -157,7 +157,6 @@
                     'file_path' => 'required_without:file|url', 'from' => 'required|email', 'reply_to' => 'email',
                     'sender_name' => 'required|string', 'subject' => 'required', 'template' => 'required',
                     'is_scheduled' => 'required|in:0,1',
-                    'schedule_name' => 'required|string',
                     'schedule_datetime' => 'required|date|date_format:Y-m-d H:i:s|after:now',
                 ]);
                 if (count($validator->errors())) {
@@ -166,9 +165,8 @@
                         "created_at" => Carbon::now(),
                     ], 400);
                 }
-                $draft->is_scheduled = true;
                 $draft->scheduled_at = \request()->input('schedule_datetime');
-                $draft->schedule_is_active = true;
+                $draft->is_schedule_active = 1;
             }
             if ($draft->save()) {
                 $draft->file_path = url($draft->file_path);
