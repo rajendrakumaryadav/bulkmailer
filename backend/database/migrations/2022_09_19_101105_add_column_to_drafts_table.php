@@ -14,9 +14,11 @@ return new class extends Migration
     public function up()
     {
         Schema::table('drafts', function (Blueprint $table) {
-            $table->boolean('is_scheduled')->default(false);
-            $table->foreignId('schedule_id')->nullable()
-                ->constrained('schedules')->cascadeOnDelete();
+//            $table->boolean('is_scheduled')->default(false);
+//            $table->foreignId('schedule_id')->nullable()
+//                ->constrained('schedules')->cascadeOnDelete();
+            $table->dateTime('scheduled_at')->nullable();
+            $table->boolean('is_active')->default(true);
         });
     }
 
@@ -28,8 +30,8 @@ return new class extends Migration
     public function down()
     {
         Schema::table('drafts', function (Blueprint $table) {
-            $table->dropForeign(['schedule_id']);
-            $table->dropColumn('schedule_id');
+            $table->dropColumn('scheduled_at');
+            $table->dropColumn('is_active');
         });
     }
 };

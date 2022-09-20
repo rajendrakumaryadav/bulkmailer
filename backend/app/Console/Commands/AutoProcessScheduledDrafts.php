@@ -4,6 +4,7 @@
 
     use App\Models\Drafts;
     use Illuminate\Console\Command;
+    use Illuminate\Support\Facades\DB;
 
     class AutoProcessScheduledDrafts extends Command
     {
@@ -29,11 +30,6 @@
          */
         public function handle()
         {
-            $drafts = Drafts::where('is_scheduled', true)->get();
-            foreach ($drafts as $draft) {
-                if ($draft->scheduled_at <= now()) {
-                    logger('Processing scheduled draft: '.$draft->draft_id);
-                }
-            }
+           logger('AutoProcessScheduledDrafts command is running');
         }
     }
