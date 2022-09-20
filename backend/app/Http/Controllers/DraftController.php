@@ -166,23 +166,9 @@
                         "created_at" => Carbon::now(),
                     ], 400);
                 }
-                $schedule = new Schedules();
-                if (isset($draft->schedule_id)){
-                    try {
-                        Schedules::findOrFail($draft->schedule_id);
-                    } catch (ModelNotFoundException $e) {
-                        return response()->json([
-                            "status_code" => Response::HTTP_NOT_FOUND,
-                            "message" => "Schedule not found.",
-                            "created_at" => Carbon::now(),
-                        ], 404);
-                    }
-                } else {
-                    $schedule->name = \request()->input('schedule_name') ?? null;
-                    $schedule->schedule_time = date('H:i:s', strtotime(\request()->input('schedule_datetime'))) ?? null;
-                    $schedule->schedule_date = date('Y-m-d', strtotime(\request()->input('schedule_datetime'))) ?? null;
-                    $draft->schedule_id = $schedule->save() ? $schedule->id : null;
-                }
+                $draft->is_scheduled = true;
+                $draft->scheduled_at = \request()->input('schedule_datetime');
+                $draft->schedule_is_active = true;
             }
             if ($draft->save()) {
                 $draft->file_path = url($draft->file_path);
