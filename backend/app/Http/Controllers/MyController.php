@@ -53,8 +53,10 @@
                 // file path have url them return true
                 if ($file_url != null) {
                     $draft_file_path = $this->extract_file_path_from_url($file_url);
-                    if (file_exists(storage_path('app/public/').str_replace('storage/', '', $draft_file_path))) {
-                        $this->filepath = storage_path('app/public/').str_replace('storage/', '', $draft_file_path);
+                    Log::info( __FILE__. " ". __LINE__ ." ". __METHOD__ ." ".public_path($draft_file_path));
+                    Log::info(__FILE__. " ". __LINE__ ." ". __METHOD__ ." ".file_exists(public_path($draft_file_path)));
+                    if (file_exists(public_path($draft_file_path))) {
+                        $this->filepath = public_path($draft_file_path);
                     }
                 } else {
                     $this->filepath = $file->move('storage/data/', $this->get_unique_filename($file));
@@ -62,6 +64,7 @@
             } catch (Exception $e) {
                 return Response::json(['error' => "Error to Read file."]);
             }
+            Log::notice(__FILE__ . " " . __LINE__ . " " . __METHOD__ . " " . $this->filepath);
             if ($this->filepath == null) {
                 return Response::json(['error' => "File not found."], 400);
             }
