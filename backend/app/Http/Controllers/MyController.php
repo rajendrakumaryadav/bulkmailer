@@ -7,6 +7,7 @@
     use App\Models\JobLists;
     use Exception;
     use Illuminate\Support\Facades\File;
+    use Illuminate\Support\Facades\Log;
     use Illuminate\Support\Facades\Request;
     use Illuminate\Support\Facades\Response;
     use Illuminate\Support\Facades\Validator;
@@ -18,7 +19,7 @@
 
         public function __construct()
         {
-            $this->filepath = 'storage/data.csv';
+            $this->filepath = '';
         }
 
         public function view_form()
@@ -29,17 +30,18 @@
 
         public function index()
         {
+            if (Request::post('file_path')) {
+                \request()->file_path = str_replace('\\', '', Request::post('file_path'));
+            }
             $validated = Validator::make(Request::all(), [
                 'file' => 'required_without:file_path|file|mimes:csv,txt',
                 'file_path' => 'required_without:file|url|active_url', 'subject' => 'required|string',
                 'template' => 'required|string', 'reply_to' => 'email', 'from' => 'required|email',
                 'sender_name' => 'required|string', 'draft_id' => 'integer',    // optional direct messages can be sent.
             ]);
-
             if (count($validated->errors()) > 0) {
                 return $validated->errors();
             }
-
 
             $file = Request::file('file') ?? null;
             $file_url = Request::post('file_path') ?? null;
@@ -49,22 +51,26 @@
             $from = Request::post('from');
             $sender_name = Request::post('sender_name') ?? "Official Email";
             $draft_id = Request::post('draft_id') ?? null;
+            $file_path = "";
             try {
                 // file path have url them return true
                 if (!($file_url == null)) {
                     $current_url = url('/');
-                    $draft_file_path = explode($current_url.'/', $file_url, 2);
-                    if (file_exists($draft_file_path[1])) {
-                        $this->filepath = $draft_file_path[1];
+                    $draft_file_path = str_replace($current_url.'/',"", str_replace("\\", "", $file_url));
+
+                    if (file_exists($draft_file_path)) {
+                        $file_path = $draft_file_path;
                     }
                 } else {
-                    $this->filepath = $file->move('storage/data/', $this->get_unique_filename($file));
+                    $file_path = $file->move('storage/data/', $this->get_unique_filename($file));
                 }
             } catch (Exception $e) {
                 return Response::json(['error' => $e->getMessage()]);
             }
 
-            $csv = Reader::createFromPath($this->filepath);
+            Log::info("File path - After all validation ".$file_path);
+
+            $csv = Reader::createFromPath($file_path);
             $records = $csv->getRecords();
             $data = [];
             foreach ($records as $record) {

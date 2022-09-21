@@ -162,8 +162,12 @@
             if ($draft->is_scheduled) {
                 $validator = Validator::make(request()->all(), [
                     'file' => 'required_without:file_path|mimes:csv,txt',
-                    'file_path' => 'required_without:file|url', 'from' => 'required|email', 'reply_to' => 'email',
-                    'sender_name' => 'required|string', 'subject' => 'required', 'template' => 'required',
+                    'file_path' => 'required_without:file|url',
+                    'from' => 'required|email',
+                    'reply_to' => 'email',
+                    'sender_name' => 'required|string',
+                    'subject' => 'required',
+                    'template' => 'required',
                     'is_scheduled' => 'required|in:0,1',
                     'schedule_datetime' => 'required|date|date_format:Y-m-d H:i:s|after:now',
                 ]);

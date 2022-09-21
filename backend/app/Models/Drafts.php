@@ -12,7 +12,7 @@
 
         protected $table = "drafts";
         protected $fillable = ['*'];
-        protected $hidden = ['id', 'created_at', 'updated_at'];
+        protected $hidden = [ 'created_at', 'updated_at'];
 
         public function job_lists(): BelongsTo
         {

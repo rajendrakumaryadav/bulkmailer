@@ -3,8 +3,11 @@
     namespace App\Console\Commands;
 
     use Carbon\Carbon;
+    use Exception;
     use Illuminate\Console\Command;
+    use Illuminate\Http\Request;
     use Illuminate\Support\Facades\DB;
+
 
     class AutoProcessScheduledDrafts extends Command
     {
@@ -39,9 +42,28 @@
                     $date_now = date_format(now(), "Y-m-d H:i");
                     $record_date = date_format(new Carbon($draft->scheduled_at), 'Y-m-d H:i');
                     if (Carbon::parse($date_now)->eq(Carbon::parse($record_date))) {
-                        logger("This task will execute now");
-                        logger(DB::table('drafts')->where('id', $draft->id)
-                            ->update(['is_scheduled' => false]));
+                        $request = Request::create('/api/sendmail', 'POST', [
+                            'file_path' => url('/')."/".$draft->file_path,
+                            'template' => $draft->template,
+                            'reply_to' => $draft->reply_to,
+                            'subject' => $draft->subject,
+                            'from' => $draft->from,
+                            'sender_name' => $draft->sender_name,
+                            'draft_id' => $draft->id,
+                        ]);
+                        try {
+                            $response = app()->handle($request);
+                            if ($response->getStatusCode() == 200) {
+                                logger("This task will execute now");
+                                logger(DB::table('drafts')->where('id', $draft->id)
+                                    ->update(['is_schedule_active' => false]));
+                            } else {
+                                logger("Error ".$response->getStatusCode()." occurred while sending mail");
+                                logger("Data ".$response->getContent());
+                            }
+                        } catch (Exception $e) {
+                            $this->error($e->getMessage());
+                        }
                     }
                 }
             }
