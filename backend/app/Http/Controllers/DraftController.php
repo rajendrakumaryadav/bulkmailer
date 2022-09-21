@@ -10,6 +10,7 @@
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Log;
     use Illuminate\Support\Facades\Validator;
     use Symfony\Component\HttpFoundation\Response;
     use function response;
@@ -158,6 +159,7 @@
                 $draft->reply_to = $draft->from;
 
             }
+            Log::info("Request Data ". json_encode(\request()->all()));
             $draft->is_scheduled = \request()->input('is_scheduled') ?? $draft->is_scheduled;
             if ($draft->is_scheduled) {
                 $validator = Validator::make(request()->all(), [
@@ -171,13 +173,14 @@
                     'is_scheduled' => 'required|in:0,1',
                     'schedule_datetime' => 'required|date|date_format:Y-m-d H:i:s|after:now',
                 ]);
-                if (count($validator->errors())) {
-                    return response()->json([
-                        "status_code" => Response::HTTP_BAD_REQUEST,
-                        "message" => $validator->errors(),
-                        "created_at" => Carbon::now(),
-                    ], 400);
-                }
+                // Need to rectify this
+//                if ($validator->fails()) {
+//                    return response()->json([
+//                        "status_code" => Response::HTTP_BAD_REQUEST,
+//                        "message" => $validator->errors(),
+//                        "created_at" => Carbon::now(),
+//                    ], 400);
+//                }
                 $draft->scheduled_at = \request()->input('schedule_datetime');
                 $draft->is_schedule_active = 1;
             }
