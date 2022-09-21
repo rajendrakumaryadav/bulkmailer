@@ -7,6 +7,7 @@
     use Illuminate\Console\Command;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Log;
 
 
     class AutoProcessScheduledDrafts extends Command
@@ -42,6 +43,7 @@
                     $date_now = date_format(now(), "Y-m-d H:i");
                     $record_date = date_format(new Carbon($draft->scheduled_at), 'Y-m-d H:i');
                     if (Carbon::parse($date_now)->eq(Carbon::parse($record_date))) {
+                        Log::notice("Data - ".json_encode($draft));
                         $request = Request::create('/api/sendmail', 'POST', [
                             'file_path' => url('/')."/".$draft->file_path,
                             'template' => $draft->template,
@@ -53,13 +55,15 @@
                         ]);
                         try {
                             $response = app()->handle($request);
-                            if ($response->getStatusCode() == 200) {
-                                logger("This task will execute now");
+                            logger("Response Status Code : ".$response->getStatusCode());
+                            if ($response->isOk()) {
+                                logger("This task will execute now: ");
                                 logger(DB::table('drafts')->where('id', $draft->id)
                                     ->update(['is_schedule_active' => false]));
+                                logger("Data: ".__FILE__.__LINE__.$response->getStatusCode());
                             } else {
                                 logger("Error ".$response->getStatusCode()." occurred while sending mail");
-                                logger("Data ".$response->getContent());
+                                logger("Data ".__FILE__.__LINE__.$response->getStatusCode());
                             }
                         } catch (Exception $e) {
                             $this->error($e->getMessage());
