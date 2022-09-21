@@ -159,7 +159,6 @@
                 $draft->reply_to = $draft->from;
 
             }
-            Log::info("Request Data ". json_encode(\request()->all()));
             $draft->is_scheduled = \request()->input('is_scheduled') ?? $draft->is_scheduled;
             if ($draft->is_scheduled) {
                 $validator = Validator::make(request()->all(), [

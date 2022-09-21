@@ -34,8 +34,12 @@
                 'template' => 'required|string', 'reply_to' => 'email', 'from' => 'required|email',
                 'sender_name' => 'required|string', 'draft_id' => 'integer',    // optional direct messages can be sent.
             ]);
-            if (count($validated->errors()) > 0) {
-                return $validated->errors();
+
+            if ($validated->fails()) {
+                return Response::json([
+                    "status_code" => 400, "message" => $validated->errors(),
+                    "created_at" => now(),
+                ], 400);
             }
             $file = Request::file('file') ?? null;
             $file_url = Request::post('file_path') ?? null;
@@ -47,23 +51,26 @@
             $draft_id = Request::post('draft_id') ?? null;
             try {
                 // file path have url them return true
-                if (!($file_url == null)) {
-                    $current_url = url('/');
-                    $draft_file_path = str_replace($current_url.'/', "", str_replace("\\", "", $file_url));
-                    if (file_exists($draft_file_path)) {
-                        $this->filepath = $draft_file_path;
+                if ($file_url != null) {
+                    $draft_file_path = $this->extract_file_path_from_url($file_url);
+                    if (file_exists(storage_path('app/public/').str_replace('storage/', '', $draft_file_path))) {
+                        $this->filepath = storage_path('app/public/').str_replace('storage/', '', $draft_file_path);
                     }
-                }
-                if ($file != null) {
+                } else {
                     $this->filepath = $file->move('storage/data/', $this->get_unique_filename($file));
                 }
             } catch (Exception $e) {
-                return Response::json(['error' => $e->getMessage()]);
+                return Response::json(['error' => "Error to Read file."]);
+            }
+            if ($this->filepath == null) {
+                return Response::json(['error' => "File not found."], 400);
             }
             try {
                 $csv = Reader::createFromPath($this->filepath);
             } catch (Exception $e) {
-                Log::error($e->getTraceAsString());
+                return Response::json([
+                    'error' => 'File not found or file is not readable',
+                ]);
             }
             $records = $csv->getRecords();
             $data = [];
@@ -91,6 +98,17 @@
             return Response::json([
                 'success' => 'Email sent successfully', 'status_code' => 200,
             ]);
+        }
+
+        /**
+         * @param $url
+         * @return string
+         */
+        public function extract_file_path_from_url($url): string
+        {
+            $url = explode(env('APP_URL').'/', $url);
+
+            return $url[1];
         }
 
         /**

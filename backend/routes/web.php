@@ -22,3 +22,7 @@
     //        })->name('form.index');
     //        Route::post('/', [MyController::class, 'index'])->name('form.store');
     //    }
+
+//    Route::get('/', function(){
+//       return file_exists('storage/draft/9_632ae985cb9a5_2022-09-21-16-07-57_contacts.csv');
+//    });
