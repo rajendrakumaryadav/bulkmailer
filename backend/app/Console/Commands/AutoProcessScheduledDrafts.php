@@ -38,9 +38,10 @@
                 ->where('is_scheduled', "=", true)
                 ->where('is_schedule_active', '=', true)
                 ->get();
+            Log::info("Drafts Scheduled: " . json_encode($drafts_with_active_schedule));
+            $date_now = date_format(now(), "Y-m-d H:i");
             foreach ($drafts_with_active_schedule as $draft) {
                 if ($draft->is_scheduled && $draft->is_schedule_active) {
-                    $date_now = date_format(now(), "Y-m-d H:i");
                     $record_date = date_format(new Carbon($draft->scheduled_at), 'Y-m-d H:i');
                     if (Carbon::parse($date_now)->eq(Carbon::parse($record_date))) {
                         $request = Request::create('/api/sendmail', 'POST', [
@@ -57,13 +58,13 @@
                             if ($response->isOk()) {
                                 DB::table('drafts')->where('id', $draft->id)
                                     ->update(['is_schedule_active' => false]);
-                                logger("Data: ".__FILE__." - ".__LINE__." - ".$response->getStatusCode());
+                                logger("Success: ".__FILE__." - ".__LINE__." - ".$response->getStatusCode());
+                                Log::info("Success: ".__FILE__." - ".__LINE__." - ".$response->getContent());
                             } else {
-                                logger("Error: ".__FILE__." - ".__LINE__." - ".$response->getStatusCode());
+                                logger("Failed: ".__FILE__." - ".__LINE__." - ".$response->getStatusCode());
                             }
                         } catch (Exception $e) {
-                            Log::error(__FILE__." ".__LINE__." ".__METHOD__." ".$e->getMessage());
-                            $this->error($e->getMessage());
+                            Log::error("Exception : ".__FILE__." ".__LINE__." ".__METHOD__." ".$e->getMessage());
                         }
                     }
                 }
