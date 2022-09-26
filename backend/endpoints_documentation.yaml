@@ -1,0 +1,841 @@
+openapi: 3.0.3
+info:
+  title: Mail Scheduler
+  description: "This backend service used to <bold>Draft / Schedule</bold> to Auto send
+  and send
+  instant emails."
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8000/api'
+    description: Local server
+paths:
+  "/create-job":
+    post:
+      summary: Create a new job
+      description: Create a new job
+      operationId: createJob
+      tags:
+        - "Creating a new Job"
+      responses:
+        '200':
+          description: "Draft Job created successfully and response body is returned as
+          follows."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: "Status code of the response wrapped in response body."
+                  id:
+                    type: integer
+                    description: Draft Primary id
+                  draft_id:
+                    type: string
+                    description: Draft ID - Reference from Drafts table
+                  status:
+                    type: string
+                    enum: [ 0, 1, 2 ]
+                    description: Draft status
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: Draft created at
+                    example: "2022-09-22T08:15:20.456090Z"
+
+  "/sendmail":
+    post:
+      summary: Send mail
+      description: "This endpoint is used to send mail instantly. It will required all
+      the fields and will send mail instantly."
+      operationId: sendMail
+      tags:
+        - Sending mails instantly
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "CSV file having all the details including users email |
+                   not required if file_path is set."
+                  example: "file.csv"
+                file_path:
+                  type: string
+                  format: url
+                  description: "File path of the CSV file | not required if file is set."
+                  example: "https://www.example.com/file.csv"
+                  required: false
+                subject:
+                  type: string
+                  description: "Subject of the mail"
+                  example: "Subject of the mail"
+                  required: true
+                template:
+                  type: string
+                  description: "Body of the mail"
+                  example: "Dear {#0#},<br><br> This is a test mail.<br><br>Regards,<br>Team"
+                  required: true
+                reply_to:
+                  type: string
+                  format: email
+                  description: "Reply to email address"
+                  example: "reply_to@example.com"
+                  required: true
+                from:
+                  type: string
+                  format: email
+                  description: "From email address"
+                  example: "office@example.com"
+                  required: true
+                sender_name:
+                  type: string
+                  description: "Sender name"
+                  example: "Sender Name"
+                  required: true
+                draft_id:
+                  type: integer
+                  description: "Draft id"
+                  example: 16
+                  required: true
+      responses:
+        200:
+          description: "Mail sent successfully and response body is returned as follows."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    description: "Success message"
+                    example: "Email sent successfully."
+                  status_code:
+                    type: integer
+                    example: 200
+                    description: "Status code of the response wrapped in response body."
+        400:
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 400
+                    description: "Status code of the response wrapped in response body."
+                  message:
+                    type: object
+                    properties:
+                      file:
+                        type: array
+                        items:
+                          type: string
+                          example: "The file field is required when file path is not present."
+                      file_path:
+                        type: array
+                        items:
+                          type: string
+                          example: "The file path field is required when file is not present."
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: "Date and time of the response wrapped in response body."
+                    example: "2022-09-22T08:15:20.456090Z"
+        500:
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 500
+                    description: "Status code of the response wrapped in response body."
+                  message:
+                    type: string
+                    example: "Error: File not found on the server. Please check the file path or upload a file."
+                    description: "Error message"
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: "Date and time of the response wrapped in response body."
+                    example: "2022-09-22T08:15:20.456090Z"
+
+  "/mailer-webhook":
+    post:
+      summary: "Webhook to listen mailer requests."
+      description: "This endpoint will be hit by SendInBlue webhook to listen mailer"
+      operationId: mailerWebhook
+      tags:
+        - "SendInBlue webhook listener."
+      responses:
+        200:
+          description: "Webhook Response of the SendInBlue in response to api request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  event:
+                    type: string
+                    description: "Event name of the webhook."
+                    enum: [ 'delivered', 'soft bounce', 'hard bounce', 'spam', 'blocked', 'deferred', 'opened', 'clicked', 'unsubscribed', 'invalid', 'request', 'accepted', 'rejected', 'unknown' ]
+                  email:
+                    type: string
+                    format: email
+                    description: "Email address of the recipient."
+                  message-id:
+                    type: string
+                    format: email
+                    description: "Message id of the email."
+                  id:
+                    type: integer
+                    description: "Id of the email."
+                  date:
+                    type: string
+                    format: date-time
+                    description: "Date of the email."
+                    example: "2022-09-22 08:15:20"
+                  ts:
+                    type: integer
+                    description: "Timestamp of the email."
+                  ts_event:
+                    type: integer
+                    description: "Timestamp of the event."
+                  subject:
+                    type: string
+                    description: "Subject of the email."
+                  tag:
+                    type: string
+                    enum: [ 'transactionalTag' ]
+                    description: "Tag of the email."
+                  sending_ip:
+                    type: string
+                    description: "Sending ip of the email."
+                    format: ip
+                  ts_epoch:
+                    type: integer
+                    description: "Timestamp of the email."
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                      enum: [ 'transactionalTag' ]
+                    description: "Tags of the email."
+
+  "/add_to_draft/{id}":
+    post:
+      summary: "Add to draft"
+      description: "This endpoint is used to add mail content to the draft, specified
+      in url parameter"
+      operationId: addToDraft
+      tags:
+        - "Add to draft"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: "Job ID created in /create-job request"
+          example: 16
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "CSV file having all the details including users email |
+                   not required if file_path is set."
+                  example: "file.csv"
+                  anyOf:
+                    - required: [ file_path ]
+                file_path:
+                  type: string
+                  format: url
+                  description: "File path of the CSV file | not required if file is set."
+                  example: "http://example.com/file.csv"
+                  anyOf:
+                    - required: [ file ]
+                subject:
+                  type: string
+                  description: "Subject of the mail"
+                  example: "Subject of the mail"
+                  required: false
+                template:
+                  type: string
+                  description: "Body of the mail"
+                  example: "Dear {#0#},<br><br> This is a test mail.<br><br>Regards,<br>Team"
+                  required: false
+                reply_to:
+                  type: string
+                  format: email
+                  description: "Reply to email address"
+                  example: "example@example.com"
+                from:
+                  type: string
+                  format: email
+                  description: "From email address"
+                  example: "example@example.com"
+                sender_name:
+                  type: string
+                  description: "Sender name"
+                  example: "Sender Name"
+                draft_id:
+                  type: integer
+                  description: "Draft id"
+                  example: 16
+
+
+      responses:
+        404:
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "Draft not found."
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2022-09-22T08:15:20.456090Z"
+        200:
+          description: "Draft updated successfully and response body is returned as follows."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                    description: "Status code of the response wrapped in response body."
+                  message:
+                    type: string
+                    example: "Draft updated successfully."
+                    description: "Success message"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 16
+                        description: "Id of the draft from Drafts table"
+                      draft_id:
+                        type: string
+                        example: "DRAFT_ID_6329ae9c167c5"
+                        description: "pseudo id of the draft code, it is an unique column"
+                      file_path:
+                        type: string
+                        format: url
+                        example: "https://example.com/file.pdf"
+                        description: "File path of the file uploaded to the draft"
+                      from:
+                        type: string
+                        format: email
+                        example: "example@example.com"
+                        description: "Senders email address"
+                      reply_to:
+                        type: string
+                        format: email
+                        example: "reply@example.com "
+                        description: "Reply to email address | If not set it will be same as from"
+                      subject:
+                        type: string
+                        example: "Subject of the mail"
+                        description: "Subject of the mail"
+                      template:
+                        type: string
+                        example: "template_1"
+                        description: "Template name of the mail"
+                      status:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 0
+                        description: "It is automatically handled by backend server. 0
+                        - draft, 1 - in process, 2 - processed"
+                      sender_name:
+                        type: string
+                        example: "Sender Name"
+                        description: "Sender name of the mail"
+                      scheduled_at:
+                        type: string
+                        format: date-time
+                        example: "2022-09-22 08:15:20"
+                        description: "Date and time of the mail to be sent"
+                      is_scheduled:
+                        type: boolean
+                        example: false
+                        default: null
+                        description: "If true, mail will be sent at scheduled_at time"
+                      is_schedule_active:
+                        type: boolean
+                        example: false
+                        default: null
+                        description: "If true, mail will be sent at scheduled_at time"
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: "Date and time of the response wrapped in response body."
+                    example: "2022-09-22T08:15:20.456090Z"
+
+
+  "/add_to_draft/{id-job_id}":
+    post:
+      summary: "Schedule a Job"
+      description: "This endpoint is used to add mail content to the draft, specified
+      in url parameter"
+      operationId: addToDraft
+      tags:
+        - "Schedule a Job"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: "Job ID created in /create-job request"
+          example: 16
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "CSV file having all the details including users email |
+                   not required if file_path is set."
+                  example: "file.csv"
+                  anyOf:
+                    - required: [ file_path ]
+                file_path:
+                  type: string
+                  format: url
+                  description: "File path of the CSV file | not required if file is set."
+                  example: "http://example.com/file.csv"
+                  anyOf:
+                    - required: [ file ]
+                subject:
+                  type: string
+                  description: "Subject of the mail"
+                  example: "Subject of the mail"
+                  required: true
+                template:
+                  type: string
+                  description: "Body of the mail"
+                  example: "Dear {#0#},<br><br> This is a test mail.<br><br>Regards,<br>Team"
+                  required: true
+                reply_to:
+                  type: string
+                  format: email
+                  description: "Reply to email address"
+                  example: "example@example.com"
+                from:
+                  type: string
+                  format: email
+                  description: "From email address"
+                  example: "example@example.com"
+                  required: true
+                sender_name:
+                  type: string
+                  description: "Sender name"
+                  example: "Sender Name"
+                  required: true
+                draft_id:
+                  type: integer
+                  description: "Draft id"
+                  example: 16
+                  required: true
+
+
+      responses:
+        404:
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "Draft not found."
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2022-09-22T08:15:20.456090Z"
+        200:
+          description: "Draft updated successfully and response body is returned as follows."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                    description: "Status code of the response wrapped in response body."
+                  message:
+                    type: string
+                    example: "Draft updated successfully."
+                    description: "Success message"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 16
+                        description: "Id of the draft from Drafts table"
+                      draft_id:
+                        type: string
+                        example: "DRAFT_ID_6329ae9c167c5"
+                        description: "pseudo id of the draft code, it is an unique column"
+                      file_path:
+                        type: string
+                        format: url
+                        example: "https://example.com/file.pdf"
+                        description: "File path of the file uploaded to the draft"
+                      from:
+                        type: string
+                        format: email
+                        example: "example@example.com"
+                        description: "Senders email address"
+                      reply_to:
+                        type: string
+                        format: email
+                        example: "reply@example.com "
+                        description: "Reply to email address | If not set it will be same as from"
+                      subject:
+                        type: string
+                        example: "Subject of the mail"
+                        description: "Subject of the mail"
+                      template:
+                        type: string
+                        example: "template_1"
+                        description: "Template name of the mail"
+                      status:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 0
+                        description: "It is automatically handled by backend server. 0
+                        - draft, 1 - in process, 2 - processed"
+                      sender_name:
+                        type: string
+                        example: "Sender Name"
+                        description: "Sender name of the mail"
+                      scheduled_at:
+                        type: string
+                        format: date-time
+                        example: "2022-09-22 08:15:20"
+                        description: "Date and time of the mail to be sent"
+                      is_scheduled:
+                        type: boolean
+                        example: false
+                        default: null
+                        description: "If true, mail will be sent at scheduled_at time"
+                      is_schedule_active:
+                        type: boolean
+                        example: false
+                        default: null
+                        description: "If true, mail will be sent at scheduled_at time"
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: "Date and time of the response wrapped in response body."
+                    example: "2022-09-22T08:15:20.456090Z"
+
+  "/get-draft/{id}":
+    get:
+      summary: "Get draft"
+      description: "This endpoint is used to get draft, specified in url parameter"
+      operationId: getDraft
+      tags:
+        - "Get draft"
+        - "Get Scheduled Draft"
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: "Id of the draft"
+          example: 16
+      responses:
+        404:
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: "Status code of the response wrapped in response body."
+                    example: 404
+                  message:
+                    type: string
+                    description: "Error message"
+                    example: "Draft not found."
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: "Date and time of the response wrapped in response body."
+                    example: "2022-09-22T08:15:20.456090Z"
+        200:
+          description: "Draft fetched successfully and response body is returned as
+          follows."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: "Status code of the response wrapped in response body."
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: "Id of the draft from Drafts table"
+                        example: 16
+                      draft_id:
+                        type: string
+                        description: "pseudo id of the draft code, it is an unique column"
+                        example: "DRAFT_ID_6329ae9c167c5"
+                      file_path:
+                        type: string
+                        format: url
+                        description: "File path of the file uploaded to the draft"
+                        example: "https://example.com/file.pdf"
+                      from:
+                        type: string
+                        format: email
+                        example: contact@example.com
+                        description: "Senders email address"
+                      reply_to:
+                        type: string
+                        format: email
+                        description: "Reply to email address"
+                        example: "reply_to@example.com"
+                      subject:
+                        type: string
+                        description: "Subject of the mail"
+                        example: "Subject of the mail"
+                      template:
+                        type: string
+                        description: "Body of the mail"
+                        example: "Dear {#0#},<br><br> This is a test mail.<br><br>Regards,<br>Team"
+                      status:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        description: "It is automatically handled by backend server. 0
+                        - draft, 1 - in process, 2 - processed"
+                        example: 0
+                      sender_name:
+                        type: string
+                        description: "Sender name"
+                        example: "Sender Name"
+                      scheduled_at:
+                        type: string
+                        format: date-time
+                        description: "Date and time of the mail to be sent"
+                        example: "2022-09-22 08:15:20"
+                      is_scheduled:
+                        type: boolean
+                        description: "If true, mail will be sent at scheduled_at time"
+                        example: false
+                        default: null
+                      is_schedule_active:
+                        type: boolean
+                        description: "If true, mail will be sent at scheduled_at time"
+                        example: false
+                        default: null
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: "Date and time of the response wrapped in response body."
+                    example: "2022-09-22T08:15:20.456090Z"
+
+  "/get-drafts":
+    get:
+      summary: "Get drafts"
+      description: "This endpoint is used to get all drafts"
+      operationId: getDrafts
+      tags:
+        - "Get drafts and Schedules"
+      responses:
+        200:
+
+          description: "Drafts fetched successfully and response body is returned as"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: "Status code of the response wrapped in response body."
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 16
+                          description: "Id of the draft from Drafts table"
+                        draft_id:
+                          type: string
+                          example: "DRAFT_ID_6329ae9c167c5"
+                          description: "pseudo id of the draft code, it is an unique column"
+                        file_path:
+                          type: string
+                          format: url
+                          example: "https://example.com/file.pdf"
+                          description: "File path of the file uploaded to the draft"
+                        from:
+                          type: string
+                          format: email
+                          example: "example@example.com"
+                          description: "Senders email address"
+                        reply_to:
+                          type: string
+                          format: email
+                          example: "reply@example.com "
+                          description: "Reply to email address | If not set it will be same as from"
+                        subject:
+                          type: string
+                          example: "Subject of the mail"
+                          description: "Subject of the mail"
+                        template:
+                          type: string
+                          example: "template_1"
+                          description: "Template name of the mail"
+                        status:
+                          type: integer
+                          enum:
+                            - 0
+                            - 1
+                            - 2
+                          example: 0
+                          description: "It is automatically handled by backend server. 0
+                          - draft, 1 - in process, 2 - processed"
+                        sender_name:
+                          type: string
+                          example: "Sender Name"
+                          description: "Sender name of the mail"
+                        scheduled_at:
+                          type: string
+                          format: date-time
+                          example: "2022-09-22 08:15:20"
+                          description: "Date and time of the mail to be sent"
+                        is_scheduled:
+                          type: boolean
+                          example: false
+                          default: null
+                          description: "If true, mail will be sent at scheduled_at time"
+                        is_schedule_active:
+                          type: boolean
+                          example: false
+                          default: null
+                          description: "If true, mail will be sent at scheduled_at time"
+
+                      properties:
+                        id:
+                          type: integer
+                          example: 16
+                          description: "Id of the draft from Drafts table"
+                        draft_id:
+                          type: string
+                          example: "DRAFT_ID_6329ae9c167c5"
+                          description: "pseudo id of the draft code, it is an unique column"
+                        file_path:
+                          type: string
+                          format: url
+                          example: "https://example.com/file.pdf"
+                          description: "File path of the file uploaded to the draft"
+                        from:
+                          type: string
+                          format: email
+                          example: "example@example.com"
+                          description: "Senders email address"
+                        reply_to:
+                          type: string
+                          format: email
+                          example: "reply@example.com "
+                          description: "Reply to email address | If not set it will be same as from"
+                        subject:
+                          type: string
+                          example: "Subject of the mail"
+                          description: "Subject of the mail"
+                        template:
+                          type: string
+                          example: "template_1"
+                          description: "Template name of the mail"
+                        status:
+                          type: integer
+                          enum:
+                            - 0
+                            - 1
+                            - 2
+                          example: 0
+                          description: "It is automatically handled by backend server. 0
+                          - draft, 1 - in process, 2 - processed"
+                        sender_name:
+                          type: string
+                          example: "Sender Name"
+                          description: "Sender name of the mail"
+                        scheduled_at:
+                          type: string
+                          format: date-time
+                          example: "2022-09-22 08:15:20"
+                          description: "Date and time of the mail to be sent"
+                        is_scheduled:
+                          type: boolean
+                          example: false
+                          default: null
+                          description: "If true, mail will be sent at scheduled_at time"
+                        is_schedule_active:
+                          type: boolean
+                          example: false
+                          default: null
+                          description: "If true, mail will be sent at scheduled_at time"
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: "Date and time of the response wrapped in response body."
+                    example: "2022-09-22T08:15:20.456090Z"
