@@ -37,8 +37,7 @@
 
             if ($validated->fails()) {
                 return Response::json([
-                    "status_code" => 400, "message" => $validated->errors(),
-                    "created_at" => now(),
+                    "status_code" => 400, "message" => $validated->errors(), "created_at" => now(),
                 ], 400);
             }
             $file = Request::file('file') ?? null;
@@ -53,8 +52,8 @@
                 // file path have url them return true
                 if ($file_url != null) {
                     $draft_file_path = $this->extract_file_path_from_url($file_url);
-                    Log::info( __FILE__. " ". __LINE__ ." ". __METHOD__ ." ".public_path($draft_file_path));
-                    Log::info(__FILE__. " ". __LINE__ ." ". __METHOD__ ." ".file_exists(public_path($draft_file_path)));
+                    Log::info(__FILE__." ".__LINE__." ".__METHOD__." ".public_path($draft_file_path));
+                    Log::info(__FILE__." ".__LINE__." ".__METHOD__." ".file_exists(public_path($draft_file_path)));
                     if (file_exists(public_path($draft_file_path))) {
                         $this->filepath = public_path($draft_file_path);
                     }
@@ -62,18 +61,28 @@
                     $this->filepath = $file->move('storage/data/', $this->get_unique_filename($file));
                 }
             } catch (Exception $e) {
-                return Response::json(['error' => "Error to Read file."]);
+                return \response()->json([
+                    "status_code" => 500,
+                    "message" => "Error: Unable to read file on the server. Please check the file path or upload a file.",
+                    "created_at" => now(),
+                ], 500);
             }
-            Log::notice(__FILE__ . " " . __LINE__ . " " . __METHOD__ . " " . $this->filepath);
+            Log::notice(__FILE__." ".__LINE__." ".__METHOD__." ".$this->filepath);
             if ($this->filepath == null) {
-                return Response::json(['error' => "File not found."], 400);
+                return Response::json([
+                    "status_code" => 500,
+                    'message' => "Error: File not found on the server. Please check the file path or upload a file.",
+                    "created_at" => now(),
+                ], 500);
             }
             try {
                 $csv = Reader::createFromPath($this->filepath);
             } catch (Exception $e) {
                 return Response::json([
-                    'error' => 'File not found or file is not readable',
-                ]);
+                    "status_code" => 500,
+                    "message" => "Error: File not found or not readable.",
+                    "created_at" => now(),
+                ], 500);
             }
             $records = $csv->getRecords();
             $data = [];

@@ -10,7 +10,6 @@
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Log;
     use Illuminate\Support\Facades\Validator;
     use Symfony\Component\HttpFoundation\Response;
     use function response;
@@ -248,6 +247,45 @@
             }
         }
 
+        /**
+         * @param  Drafts  $id
+         * @return JsonResponse
+         */
+        public function disable_schedule($id): JsonResponse
+        {
+            try {
+                $draft = Drafts::find($id);
+                if ($draft == null) {
+                    return response()->json([
+                        "status_code" => Response::HTTP_NOT_FOUND, "message" => "Draft does not exists.",
+                    ], 404);
+                }
+                if ($draft->is_schedule_active == 0) {
+                    return response()->json([
+                        "status_code" => Response::HTTP_BAD_REQUEST, "message" => "Draft is already inactive.",
+                    ], 400);
+                }
+                $draft->is_schedule_active = 0;
+                if ($draft->save()) {
+                    return response()->json([
+                        "status_code" => Response::HTTP_OK, "message" => "Schedule disabled successfully.",
+                    ]);
+                } else {
+                    return response()->json([
+                        "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR,
+                        "message" => "Failed to disable schedule.",
+                    ], 500);
+                }
+            } catch (Exception $e) {
+                return response()->json([
+                    "status_code" => Response::HTTP_INTERNAL_SERVER_ERROR, "message" => "Unknown error occurred.",
+                ], 500);
+            }
+        }
+
+        /**
+         * @return JsonResponse
+         */
         public function getDrafts()
         {
             $drafts = DB::table('drafts')->where('status', '=', '0')->get();

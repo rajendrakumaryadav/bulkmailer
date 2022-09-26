@@ -38,12 +38,14 @@
                 ->where('is_scheduled', "=", true)
                 ->where('is_schedule_active', '=', true)
                 ->get();
-            Log::info("Drafts Scheduled: " . json_encode($drafts_with_active_schedule));
+//            Log::info("Drafts Scheduled: " . json_encode($drafts_with_active_schedule));
             $date_now = date_format(now(), "Y-m-d H:i");
             foreach ($drafts_with_active_schedule as $draft) {
                 if ($draft->is_scheduled && $draft->is_schedule_active) {
                     $record_date = date_format(new Carbon($draft->scheduled_at), 'Y-m-d H:i');
                     if (Carbon::parse($date_now)->eq(Carbon::parse($record_date))) {
+                        Log::info("Draft Scheduled: " . json_encode($draft));
+
                         $request = Request::create('/api/sendmail', 'POST', [
                             'file_path' => url('/')."/".$draft->file_path,
                             'template' => $draft->template,

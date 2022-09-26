@@ -22,5 +22,6 @@
     Route::post('/create-job', [DraftController::class, 'index'])->name('draft.new');
     Route::post('/add_to_draft/{id}', [DraftController::class, 'modify'])->name('draft.modify');
     Route::get("/get-draft/{id}", [DraftController::class, 'edit'])->name('draft.edit');
+    Route::put("/disable-schedule/{id}", [DraftController::class, 'disable_schedule'])->name('draft.disable_schedule');
     Route::get('/get-drafts', [DraftController::class, 'getDrafts'])->name('draft.get');
     Route::delete('/delete-task/{id}', [DraftController::class, 'destroy'])->name('draft.delete');
