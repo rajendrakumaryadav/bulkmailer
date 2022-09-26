@@ -53,10 +53,14 @@ paths:
       tags:
         - Sending mails instantly
       requestBody:
+        required: false
         content:
           application/json:
             schema:
               type: object
+              required: [ "to", "subject", "body" ]
+              anyOf:
+                - required: ['file', 'file_path']
               properties:
                 file:
                   type: string
@@ -69,39 +73,32 @@ paths:
                   format: url
                   description: "File path of the CSV file | not required if file is set."
                   example: "https://www.example.com/file.csv"
-                  required: false
                 subject:
                   type: string
                   description: "Subject of the mail"
                   example: "Subject of the mail"
-                  required: true
                 template:
                   type: string
                   description: "Body of the mail"
                   example: "Dear {#0#},<br><br> This is a test mail.<br><br>Regards,<br>Team"
-                  required: true
                 reply_to:
                   type: string
                   format: email
                   description: "Reply to email address"
                   example: "reply_to@example.com"
-                  required: true
                 from:
                   type: string
                   format: email
                   description: "From email address"
                   example: "office@example.com"
-                  required: true
                 sender_name:
                   type: string
                   description: "Sender name"
                   example: "Sender Name"
-                  required: true
                 draft_id:
                   type: integer
                   description: "Draft id"
                   example: 16
-                  required: true
       responses:
         200:
           description: "Mail sent successfully and response body is returned as follows."
@@ -247,10 +244,13 @@ paths:
           description: "Job ID created in /create-job request"
           example: 16
       requestBody:
-        required: false
+        required: true
         content:
           multipart/form-data:
             schema:
+              required: [ "subject", "body" ]
+              anyOf:
+                - required: ['file', 'file_path']
               type: object
               properties:
                 file:
@@ -259,25 +259,19 @@ paths:
                   description: "CSV file having all the details including users email |
                    not required if file_path is set."
                   example: "file.csv"
-                  anyOf:
-                    - required: [ file_path ]
                 file_path:
                   type: string
                   format: url
                   description: "File path of the CSV file | not required if file is set."
                   example: "http://example.com/file.csv"
-                  anyOf:
-                    - required: [ file ]
                 subject:
                   type: string
                   description: "Subject of the mail"
                   example: "Subject of the mail"
-                  required: false
                 template:
                   type: string
                   description: "Body of the mail"
                   example: "Dear {#0#},<br><br> This is a test mail.<br><br>Regards,<br>Team"
-                  required: false
                 reply_to:
                   type: string
                   format: email
@@ -405,7 +399,7 @@ paths:
       summary: "Schedule a Job"
       description: "This endpoint is used to add mail content to the draft, specified
       in url parameter"
-      operationId: addToDraft
+      operationId: Schedule a Job
       tags:
         - "Schedule a Job"
       parameters:
@@ -442,12 +436,10 @@ paths:
                   type: string
                   description: "Subject of the mail"
                   example: "Subject of the mail"
-                  required: true
                 template:
                   type: string
                   description: "Body of the mail"
                   example: "Dear {#0#},<br><br> This is a test mail.<br><br>Regards,<br>Team"
-                  required: true
                 reply_to:
                   type: string
                   format: email
@@ -458,17 +450,14 @@ paths:
                   format: email
                   description: "From email address"
                   example: "example@example.com"
-                  required: true
                 sender_name:
                   type: string
                   description: "Sender name"
                   example: "Sender Name"
-                  required: true
                 draft_id:
                   type: integer
                   description: "Draft id"
                   example: 16
-                  required: true
 
 
       responses:
