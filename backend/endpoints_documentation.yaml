@@ -773,67 +773,6 @@ paths:
                           example: false
                           default: null
                           description: "If true, mail will be sent at scheduled_at time"
-
-                      properties:
-                        id:
-                          type: integer
-                          example: 16
-                          description: "Id of the draft from Drafts table"
-                        draft_id:
-                          type: string
-                          example: "DRAFT_ID_6329ae9c167c5"
-                          description: "pseudo id of the draft code, it is an unique column"
-                        file_path:
-                          type: string
-                          format: url
-                          example: "https://example.com/file.pdf"
-                          description: "File path of the file uploaded to the draft"
-                        from:
-                          type: string
-                          format: email
-                          example: "example@example.com"
-                          description: "Senders email address"
-                        reply_to:
-                          type: string
-                          format: email
-                          example: "reply@example.com "
-                          description: "Reply to email address | If not set it will be same as from"
-                        subject:
-                          type: string
-                          example: "Subject of the mail"
-                          description: "Subject of the mail"
-                        template:
-                          type: string
-                          example: "template_1"
-                          description: "Template name of the mail"
-                        status:
-                          type: integer
-                          enum:
-                            - 0
-                            - 1
-                            - 2
-                          example: 0
-                          description: "It is automatically handled by backend server. 0
-                          - draft, 1 - in process, 2 - processed"
-                        sender_name:
-                          type: string
-                          example: "Sender Name"
-                          description: "Sender name of the mail"
-                        scheduled_at:
-                          type: string
-                          format: date-time
-                          example: "2022-09-22 08:15:20"
-                          description: "Date and time of the mail to be sent"
-                        is_scheduled:
-                          type: boolean
-                          example: false
-                          default: null
-                          description: "If true, mail will be sent at scheduled_at time"
-                        is_schedule_active:
-                          type: boolean
-                          example: false
-                          default: null
-                          description: "If true, mail will be sent at scheduled_at time"
                   created_at:
                     type: string
                     format: date-time
