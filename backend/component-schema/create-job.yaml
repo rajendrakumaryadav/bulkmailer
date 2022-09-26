@@ -1,9 +1,21 @@
-openapi: 3.0.3
-info:
-  title: $Title$
-  description: $Title$
-  version: 1.0.0
-servers:
-  - url: '$https$'
-paths:
-  $END$
+components:
+  schemas:
+    CreateJob:
+      type: object
+      properties:
+        status_code:
+          type: integer
+          description: "Status code of the response wrapped in response body."
+        id:
+          type: integer
+          description: Draft Primary id
+        draft_id:
+          type: string
+          description: Draft id
+        status:
+          type: string
+          enum: [ 0, 1, 2 ]
+          description: Draft status
+        created_at:
+          type: datetime
+          description: Draft created at
