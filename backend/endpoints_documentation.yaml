@@ -2,8 +2,7 @@ openapi: 3.0.3
 info:
   title: Mail Scheduler
   description: "This backend service used to <bold>Draft / Schedule</bold> to Auto send
-  and send
-  instant emails."
+   and send instant emails."
   version: 1.0.0
 servers:
   - url: 'http://localhost:8000/api'
@@ -60,7 +59,7 @@ paths:
               type: object
               required: [ "to", "subject", "body" ]
               anyOf:
-                - required: ['file', 'file_path']
+                - required: [ 'file', 'file_path' ]
               properties:
                 file:
                   type: string
@@ -250,7 +249,7 @@ paths:
             schema:
               required: [ "subject", "body" ]
               anyOf:
-                - required: ['file', 'file_path']
+                - required: [ 'file', 'file_path' ]
               type: object
               properties:
                 file:
@@ -767,3 +766,108 @@ paths:
                     format: date-time
                     description: "Date and time of the response wrapped in response body."
                     example: "2022-09-22T08:15:20.456090Z"
+
+  "/disable_schedule/{id}":
+    put:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: "ID of the JOB"
+          example: 16
+      tags:
+        - "Disable Drafts"
+      responses:
+        400:
+          description: "Already Disabled - Job Schedule."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: "Status code of the response wrapped in response body."
+                    example: 400
+                  message:
+                    type: string
+                    description: "Error message"
+                    example: "Schedule is already inactive."
+        200:
+          description: "Schedule disabled successfully and response body is returned as"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: "Status code of the response wrapped in response body."
+                    example: 200
+                  message:
+                    type: string
+                    description: "Success message"
+                    example: "Schedule disabled successfully."
+        404:
+          description: "Job Not Found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: "Status code of the response wrapped in response body."
+                    example: 404
+                  message:
+                    type: string
+                    description: "Error message"
+                    example: "Draft does not exist."
+
+  "/delete-task/{id}":
+    delete:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: "Id of the JOB"
+          example: 16
+      tags:
+        - "Delete Task"
+      responses:
+        200:
+          description: "Task deleted successfully and response body is returned as"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: "Status code of the response wrapped in response body."
+                    example: 200
+                  message:
+                    type: string
+                    description: "Success message"
+                    example: "Draft deleted successfully."
+        404:
+          description: "Job Not Found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    description: "Status code of the response wrapped in response body."
+                    example: 404
+                  message:
+                    type: string
+                    description: "Error message"
+                    example: "Draft does not exists."
+
+
