@@ -457,6 +457,22 @@ paths:
                   type: integer
                   description: "Draft id"
                   example: 16
+                scheduled_at:
+                  type: string
+                  format: date-time
+                  example: "2022-09-22 08:15:20"
+                  description: "Date and time of the mails to be sent"
+                is_scheduled:
+                  type: boolean
+                  example: false
+                  default: null
+                  description: "If true, It is a scheduled mail otherwise Draft."
+                is_schedule_active:
+                  type: boolean
+                  example: false
+                  default: null
+                  description: "If true, mails will be sent at scheduled_at time"
+
 
 
       responses:

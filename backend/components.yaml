@@ -1,0 +1,50 @@
+openapi: 3.1.0
+info:
+  title: sendMail_RequestBody
+  version: '1.0'
+components:
+  schema:
+
+    anyOf:
+      - file
+      - file_path
+    properties:
+      file:
+        type: string
+        format: binary
+        description: CSV file having all the details including users email | not required if file_path is set.
+        example: file.csv
+      file_path:
+        type: string
+        format: url
+        description: File path of the CSV file | not required if file is set.
+        example: 'https://www.example.com/file.csv'
+      subject:
+        type: string
+        description: Subject of the mail
+        example: Subject of the mail
+      template:
+        type: string
+        description: Body of the mail
+        example: 'Dear {#0#},<br><br> This is a test mail.<br><br>Regards,<br>Team'
+      reply_to:
+        type: string
+        format: email
+        description: Reply to email address
+        example: reply_to@example.com
+      from:
+        type: string
+        format: email
+        description: From email address
+        example: office@example.com
+      sender_name:
+        type: string
+        description: Sender name
+        example: Sender Name
+      draft_id:
+        type: integer
+        description: Draft id
+        minimum: 10
+        example: 16
+
+

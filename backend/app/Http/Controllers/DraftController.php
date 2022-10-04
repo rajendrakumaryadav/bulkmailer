@@ -108,7 +108,7 @@
          * @param  int  $id
          * @return JsonResponse
          */
-        public function modify(int $id): JsonResponse
+        public function modify($id): JsonResponse
         {
             // POST /api/add_to_draft/{id}
             $validator = Validator::make(request()->all(), [
